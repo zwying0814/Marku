@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marku Count Module Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background-color: #fafafa;
+        }
+
+        .section h2 {
+            color: #555;
+            margin-top: 0;
+            border-bottom: 2px solid #007acc;
+            padding-bottom: 10px;
+        }
+
+        .btn {
+            background-color: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background-color: #005a9e;
+        }
+
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .input-group {
+            margin: 10px 0;
+        }
+
+        .input-group label {
+            display: inline-block;
+            width: 120px;
+            font-weight: bold;
+        }
+
+        .input-group input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+
+        .result {
+            background-color: #e8f4fd;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .error {
+            background-color: #ffe6e6;
+            border: 1px solid #ffb3b3;
+            color: #d00;
+        }
+
+        .success {
+            background-color: #e6ffe6;
+            border: 1px solid #b3ffb3;
+            color: #0a0;
+        }
+
+        .counter-element {
+            display: inline-block;
+            background-color: #007acc;
+            color: white;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .status.loading {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+
+        .status.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .status.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🧮 Marku Count Module 测试页面</h1>
+        <!-- 自动加载测试 -->
+        <div class="section">
+            <h2>🔄 自动加载测试</h2>
+            <p>在页面中添加一些计数器元素，测试自动加载功能：</p>
+            <div>
+                <span class="counter-element">pv view: <span marku-get-count="/pv">-</span></span>
+                <span class="counter-element">pv10 view: <span marku-get-count="/pv10">-</span></span>
+                <span class="counter-element">联系我们: <span marku-get-count="/contact">-</span></span>
+                <span class="counter-element">pv: <span marku-get-count="/pv" marku-set-count="/pv">-</span></span>
+                <span class="counter-element">pv10: <span marku-get-count="/pv10" marku-set-count="/pv10"
+                        marku-inc-[10]>-</span></span>
+                <span class="counter-element">pv-1: <span marku-get-count="/pv-1" marku-set-count="/pv-1"
+                        marku-inc-[-1]>-</span></span>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入打包后的UMD版本 -->
+    <script src="./dist/index.umd.js"></script>
+
+    <script>
+        // 初始化Marku
+        document.addEventListener('DOMContentLoaded', function () {
+            Marku.init({
+                siteId: 'test-site',
+                apiBaseUrl: 'http://localhost:8080',
+                includeQuery: false
+            });
+        });
+    </script>
+</body>
+
+</html>

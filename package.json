@@ -1,0 +1,13 @@
+{
+  "name": "marku",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "serve": "cd packages/server && go run main.go"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.16.0"
+}

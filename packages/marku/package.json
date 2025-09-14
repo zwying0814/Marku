@@ -1,0 +1,44 @@
+{
+  "name": "marku",
+  "version": "1.0.0",
+  "description": "A Rollup + TypeScript template project",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "browser": "dist/index.umd.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node scripts/build.js",
+    "build:dev": "rollup -c --environment NODE_ENV:development",
+    "build:prod": "rollup -c --environment NODE_ENV:production",
+    "dev": "node scripts/dev.js",
+    "watch": "rollup -c --watch",
+    "clean": "rimraf dist",
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "npm run clean && npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "rollup",
+    "typescript",
+    "template",
+    "library"
+  ],
+  "author": "",
+  "license": "MIT",
+  "packageManager": "pnpm@10.16.1",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.4",
+    "@types/node": "^24.4.0",
+    "chokidar": "^4.0.3",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.50.1",
+    "tslib": "^2.8.1",
+    "typescript": "~5.9.2"
+  }
+}
