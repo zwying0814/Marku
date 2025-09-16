@@ -1,90 +1,58 @@
 package model
 
 import (
-	"errors"
-
-	"gorm.io/gorm"
+	"marku-server/types"
 )
 
-// User 用户数据模型
+// User 模型定义
 type User struct {
-	ID    uint   `gorm:"primaryKey" json:"id"`
-	Name  string `gorm:"not null" json:"name"`
-	Email string `gorm:"not null;unique" json:"email"`
+	Username string  `gorm:"not null;unique" json:"username"`
+	Password string  `gorm:"not null" json:"-"`
+	Email    string  `gorm:"not null;unique" json:"email"`
+	Exp      int     `gorm:"default:0" json:"exp"`
+	Role     int     `gorm:"default:1" json:"role"`
+	URL      *string `json:"url"`    // 使用指针类型表示可选字段
+	Avatar   *string `json:"avatar"` // 使用指针类型表示可选字段
+	IP       *string `json:"ip"`     // 使用指针类型表示可选字段
+	UA       *string `json:"ua"`     // 使用指针类型表示可选字段
+	types.BaseModel
 }
 
-// UserService 用户服务
-type UserService struct {
-	db *gorm.DB
-}
-
-// NewUserService 创建用户服务实例
-func NewUserService(db *gorm.DB) *UserService {
-	return &UserService{db: db}
-}
-
-// GetAllUsers 获取所有用户
-func (s *UserService) GetAllUsers() ([]User, error) {
-	var users []User
-	err := s.db.Find(&users).Error
-	return users, err
-}
-
-// GetUserByID 根据ID获取用户
-func (s *UserService) GetUserByID(id uint) (*User, error) {
+// GetUserByID 通过用户id找到用户信息
+func GetUserByID(id uint) (*User, error) {
 	var user User
-	err := s.db.First(&user, id).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return &user, nil
-}
-
-// CreateUser 创建用户
-func (s *UserService) CreateUser(name, email string) (*User, error) {
-	user := User{
-		Name:  name,
-		Email: email,
-	}
-	err := s.db.Create(&user).Error
+	err := DB.Limit(1).Where("id = ?", id).Find(&user).Error
 	if err != nil {
 		return nil, err
 	}
 	return &user, nil
 }
 
-// UpdateUser 更新用户
-func (s *UserService) UpdateUser(id uint, name, email string) (*User, error) {
+// GetUserByName 通过用户Name找到用户信息
+func GetUserByName(name string) (*User, error) {
 	var user User
-	err := s.db.First(&user, id).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	
-	user.Name = name
-	user.Email = email
-	err = s.db.Save(&user).Error
+	err := DB.Limit(1).Where("name = ?", name).Find(&user).Error
 	if err != nil {
 		return nil, err
 	}
-	
 	return &user, nil
 }
 
-// DeleteUser 删除用户
-func (s *UserService) DeleteUser(id uint) error {
-	result := s.db.Delete(&User{}, id)
-	if result.Error != nil {
-		return result.Error
+// GetUserByEmail 通过用户email找到用户信息
+func GetUserByEmail(email string) (*User, error) {
+	var user User
+	err := DB.Limit(1).Where("email = ?", email).Find(&user).Error
+	if err != nil {
+		return nil, err
 	}
-	if result.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
+	return &user, nil
+}
+
+func GetUserByEmailOrName(emailOrName string) (*User, error) {
+	var user User
+	err := DB.Limit(1).Where("email = ? OR username = ?", emailOrName, emailOrName).Find(&user).Error
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	return &user, nil
 }

@@ -1,0 +1,21 @@
+[site]
+# 系统运行端口
+Port = 12123
+# 系统运行密钥
+AppKey = 123456789
+# 数据库路径
+DatabasePath = ./data/marku.bin
+# IP数据库路径
+IPDataPath = ./data/ip2region.xdb
+# 日志文件路径
+LogPath = ./data/log.txt
+# 每次启动是否清空数据表
+DropTable = false
+
+[admin]
+# 管理员账户
+Username = admin
+# 管理员密码
+Password = 123456
+# 管理员邮箱
+Email = example@admin.com

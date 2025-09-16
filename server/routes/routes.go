@@ -1,57 +1,32 @@
 package routes
 
 import (
-	"marku-server/handle"
-	"marku-server/model"
+	"log"
+	"marku-server/config"
+	"marku-server/handle/app"
+	"marku-server/handle/count"
+	"marku-server/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
-// SetupRoutes 设置所有路由
-func SetupRoutes(r *gin.Engine) {
-	// 初始化服务
-	db := model.GetDB()
-	counterService := model.NewCounterService(db)
-	userService := model.NewUserService(db)
+func InitRouter() {
+	r := gin.Default()
+	//r.Use(middleware.Logger())
+	r.Use(middleware.Cors())
 
-	// 初始化处理器
-	counterHandler := handle.NewCounterHandler(counterService)
-	userHandler := handle.NewUserHandler(userService)
-
-	// API路由组
-	api := r.Group("/api")
+	// 公开路由
+	public := r.Group("api")
 	{
-		// 计数器相关路由
-		counters := api.Group("/counters")
-		{
-			counters.GET("", counterHandler.GetCounter)                  // 查询计数器
-			counters.POST("", counterHandler.UpsertCounter)              // 新增或更新计数器
-			counters.POST("/increment", counterHandler.IncrementCounter) // 增加计数器数值
-			counters.POST("/batch", counterHandler.BatchGetCounters)     // 批量查询计数器
-		}
+		// 健康检查
+		public.GET("/health", app.HealthCheck)
 
-		// 增量操作路由
-		increment := api.Group("/increment")
-		{
-			increment.POST("/batch", counterHandler.BatchIncrementCounters) // 批量增量计数器
-		}
-
-		// 用户相关路由
-		users := api.Group("/users")
-		{
-			users.GET("", userHandler.GetAllUsers)       // 获取所有用户
-			users.GET("/:id", userHandler.GetUserByID)   // 根据ID获取用户
-			users.POST("", userHandler.CreateUser)       // 创建用户
-			users.PUT("/:id", userHandler.UpdateUser)    // 更新用户
-			users.DELETE("/:id", userHandler.DeleteUser) // 删除用户
-		}
+		// 计数器批量查询
+		public.POST("/count/batch", count.BatchGetCounters)
+		// 计数器批量增量
+		public.POST("/increment/batch", count.BatchIncrementCounters)
 	}
 
-	// 健康检查路由
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"status":  "ok",
-			"message": "Server is running",
-		})
-	})
+	_ = r.Run(":" + config.Port)
+	log.Println("Server starting on :" + config.Port)
 }

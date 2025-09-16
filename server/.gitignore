@@ -11,3 +11,5 @@
 *.exe
 
 data/*.db
+tmp
+config.ini

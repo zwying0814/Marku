@@ -31,7 +31,7 @@ export class FetchUtils {
         }
 
         try {
-            const url = new URL('/api/counters/batch', config.apiBaseUrl);
+            const url = new URL('/api/count/batch', config.apiBaseUrl);
 
             const requestBody = {
                 siteId: config.siteId,

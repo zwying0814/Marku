@@ -5,6 +5,7 @@ import { FetchUtils } from './fetch';
 import { defaultConfig } from './config';
 // 计数器类
 export default class MarkuCounter {
+    private initialized: boolean = false;
 
     /**
      * 初始化计数器
@@ -13,6 +14,11 @@ export default class MarkuCounter {
      * @param includeQuery - 是否包含查询参数（当第一个参数为字符串时使用）
      */
     public init(siteIdOrOptions: string | ConfigOptions, apiBaseUrl?: string, includeQuery: boolean = true): void {
+        if (this.initialized) {
+            console.log('Marku Counter: Already initialized');
+            return;
+        }
+        this.initialized = true;
 
         defaultConfig.init(siteIdOrOptions, apiBaseUrl, includeQuery);
 
