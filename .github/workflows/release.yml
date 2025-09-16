@@ -34,6 +34,24 @@ jobs:
         cd server
         GOOS=linux GOARCH=amd64 go build -o marku-server-${{ github.event.inputs.version }}-linux-amd64 main.go
         
+    - name: Prepare Windows Package
+      run: |
+        mkdir -p dist/windows
+        mkdir -p dist/windows/data
+        cp server/marku-server-${{ github.event.inputs.version }}-windows-amd64.exe dist/windows/
+        cp server/config.ini.example dist/windows/config.ini
+        cd dist/windows
+        zip -r ../../marku-server-${{ github.event.inputs.version }}-windows-amd64.zip .
+        
+    - name: Prepare Linux Package
+      run: |
+        mkdir -p dist/linux
+        mkdir -p dist/linux/data
+        cp server/marku-server-${{ github.event.inputs.version }}-linux-amd64 dist/linux/
+        cp server/config.ini.example dist/linux/config.ini
+        cd dist/linux
+        tar -czf ../../marku-server-${{ github.event.inputs.version }}-linux-amd64.tar.gz .
+        
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
@@ -47,10 +65,17 @@ jobs:
           
           ## Downloads
           
-          - **Windows**: marku-server-${{ github.event.inputs.version }}-windows-amd64.exe
-          - **Linux**: marku-server-${{ github.event.inputs.version }}-linux-amd64
+          - **Windows**: marku-server-${{ github.event.inputs.version }}-windows-amd64.zip
+          - **Linux**: marku-server-${{ github.event.inputs.version }}-linux-amd64.tar.gz
+          
+          ## Package Contents
+          
+          每个压缩包都包含：
+          - 可执行文件（marku-server）
+          - 配置文件（config.ini）
+          - 数据目录（data/）
         draft: false
         prerelease: false
         files: |
-          ./server/marku-server-${{ github.event.inputs.version }}-windows-amd64.exe
-          ./server/marku-server-${{ github.event.inputs.version }}-linux-amd64
+          ./marku-server-${{ github.event.inputs.version }}-windows-amd64.zip
+          ./marku-server-${{ github.event.inputs.version }}-linux-amd64.tar.gz
