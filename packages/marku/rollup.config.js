@@ -33,28 +33,15 @@ const baseConfig = {
 // 开发环境配置
 const devConfig = {
   ...baseConfig,
-  output: [
-    {
-      file: pkg.main,
-      format: 'cjs',
-      sourcemap: true,
-      exports: 'auto'
-    },
-    {
-      file: pkg.module,
-      format: 'esm',
-      sourcemap: true
-    },
-    {
-      file: pkg.browser,
-      format: 'umd',
-      name: 'Marku',
-      sourcemap: true,
-      globals: {
-        // 如果有外部依赖，在这里定义全局变量名
-      }
+  output: {
+    file: pkg.browser,
+    format: 'umd',
+    name: 'Marku',
+    sourcemap: true,
+    globals: {
+      // 如果有外部依赖，在这里定义全局变量名
     }
-  ]
+  }
 };
 
 // 生产环境配置
@@ -72,28 +59,15 @@ const prodConfig = {
       }
     })
   ],
-  output: [
-    {
-      file: pkg.main.replace('.js', '.min.js'),
-      format: 'cjs',
-      sourcemap: true,
-      exports: 'auto'
-    },
-    {
-      file: pkg.module.replace('.js', '.min.js'),
-      format: 'esm',
-      sourcemap: true
-    },
-    {
-      file: pkg.browser.replace('.js', '.min.js'),
-      format: 'umd',
-      name: 'Marku',
-      sourcemap: true,
-      globals: {
-        // 如果有外部依赖，在这里定义全局变量名
-      }
+  output: {
+    file: pkg.browser.replace('.js', '.min.js'),
+    format: 'umd',
+    name: 'Marku',
+    sourcemap: true,
+    globals: {
+      // 如果有外部依赖，在这里定义全局变量名
     }
-  ]
+  }
 };
 
 // 根据环境变量决定使用哪个配置

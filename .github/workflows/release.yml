@@ -27,19 +27,19 @@ jobs:
     - name: Build for Windows
       run: |
         cd server
-        GOOS=windows GOARCH=amd64 go build -o marku-server-${{ github.event.inputs.version }}-windows-amd64.exe main.go
+        CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o marku-server-${{ github.event.inputs.version }}-windows-amd64.exe main.go
         
     - name: Build for Linux
       run: |
         cd server
-        GOOS=linux GOARCH=amd64 go build -o marku-server-${{ github.event.inputs.version }}-linux-amd64 main.go
+        CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o marku-server-${{ github.event.inputs.version }}-linux-amd64 main.go
         
     - name: Prepare Windows Package
       run: |
         mkdir -p dist/windows
         mkdir -p dist/windows/data
         cp server/marku-server-${{ github.event.inputs.version }}-windows-amd64.exe dist/windows/
-        cp server/config.ini.example dist/windows/config.ini
+        cp server/config.ini.example dist/windows/
         cd dist/windows
         zip -r ../../marku-server-${{ github.event.inputs.version }}-windows-amd64.zip .
         
@@ -48,7 +48,7 @@ jobs:
         mkdir -p dist/linux
         mkdir -p dist/linux/data
         cp server/marku-server-${{ github.event.inputs.version }}-linux-amd64 dist/linux/
-        cp server/config.ini.example dist/linux/config.ini
+        cp server/config.ini.example dist/linux/
         cd dist/linux
         tar -czf ../../marku-server-${{ github.event.inputs.version }}-linux-amd64.tar.gz .
         
@@ -71,9 +71,14 @@ jobs:
           ## Package Contents
           
           每个压缩包都包含：
-          - 可执行文件（marku-server）
+          - 可执行文件（marku-server，静态编译，无系统依赖）
           - 配置文件（config.ini）
           - 数据目录（data/）
+          
+          ## 兼容性说明
+          
+          - **Linux**: 静态编译版本，兼容所有 Linux 发行版（无 GLIBC 依赖）
+          - **Windows**: 静态编译版本，兼容 Windows 7 及以上版本
         draft: false
         prerelease: false
         files: |

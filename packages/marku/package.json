@@ -1,13 +1,14 @@
 {
   "name": "marku",
   "version": "1.0.0",
-  "description": "A Rollup + TypeScript template project",
-  "main": "dist/index.cjs.js",
-  "module": "dist/index.esm.js",
+  "description": "A lightweight and flexible counter library for web applications",
+  "main": "dist/index.umd.js",
   "browser": "dist/index.umd.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "node scripts/build.js",
@@ -21,13 +22,25 @@
     "test": "npx http-server -p 5500"
   },
   "keywords": [
-    "rollup",
+    "counter",
+    "web",
+    "frontend",
+    "javascript",
     "typescript",
-    "template",
-    "library"
+    "library",
+    "marku"
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/marku.git",
+    "directory": "packages/marku"
+  },
+  "homepage": "https://github.com/your-username/marku#readme",
+  "bugs": {
+    "url": "https://github.com/your-username/marku/issues"
+  },
   "packageManager": "pnpm@10.16.1",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.6",
