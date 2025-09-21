@@ -1,48 +1,117 @@
 package config
 
 import (
-	"gopkg.in/ini.v1"
 	"log"
+	"os"
+	"strconv"
+
+	"gopkg.in/yaml.v3"
 )
 
+// Config 主配置结构体
+type Config struct {
+	Site  SiteConfig  `yaml:"site"`
+	Admin AdminConfig `yaml:"admin"`
+}
+
+// SiteConfig 站点配置结构体
+type SiteConfig struct {
+	Port           int      `yaml:"port"`
+	AppKey         string   `yaml:"app_key"`
+	DatabasePath   string   `yaml:"database_path"`
+	IPDataPath     string   `yaml:"ip_data_path"`
+	LogPath        string   `yaml:"log_path"`
+	DropTable      bool     `yaml:"drop_table"`
+	AllowedOrigins []string `yaml:"allowed_origins"`
+}
+
+// AdminConfig 管理员配置结构体
+type AdminConfig struct {
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+	Email    string `yaml:"email"`
+}
+
+// 全局配置变量 (保持向后兼容)
 var (
-	AppKey        string
-	IPDataPath    string
-	DatabasePath  string
-	Port          string
-	LogFilePath   string
-	DropTable     bool
-	AdminUsername string
-	AdminPassword string
-	AdminEmail    string
+	AppKey         string
+	IPDataPath     string
+	DatabasePath   string
+	Port           string
+	LogFilePath    string
+	DropTable      bool
+	AllowedOrigins []string
+	AdminUsername  string
+	AdminPassword  string
+	AdminEmail     string
 )
+
+// 全局配置实例
+var GlobalConfig *Config
 
 // InitConfigFile 函数用于初始化配置文件
 func InitConfigFile() {
-	// 使用 ini 包的 Load 函数加载配置文件
-	file, err := ini.Load("config.ini")
-	// 检查加载配置文件时是否发生错误
+	// 读取 YAML 配置文件
+	data, err := os.ReadFile("config.yaml")
 	if err != nil {
-		// 如果发生错误，打印错误信息，提示用户检查文件路径
 		log.Fatalln("配置文件读取错误，请检查文件路径：", err.Error())
 	}
-	// 调用 LoadSiteConfig 函数，传入加载的配置文件对象，加载站点相关配置
-	LoadSiteConfig(file)
-	LoadAdminConfig(file)
+
+	// 解析 YAML 配置
+	var config Config
+	err = yaml.Unmarshal(data, &config)
+	if err != nil {
+		log.Fatalln("配置文件解析错误：", err.Error())
+	}
+
+	// 保存全局配置实例
+	GlobalConfig = &config
+
+	// 设置全局变量 (保持向后兼容)
+	setGlobalVariables(&config)
 }
 
-// LoadSiteConfig 从ini文件中加载站点配置
-func LoadSiteConfig(file *ini.File) {
-	Port = file.Section("site").Key("Port").MustString("12123")
-	AppKey = file.Section("site").Key("AppKey").MustString("123456789")
-	IPDataPath = file.Section("site").Key("IPDataPath").MustString("/data/ip2region.xdb")
-	DatabasePath = file.Section("site").Key("DatabasePath").MustString("/data/marku.bin")
-	LogFilePath = file.Section("site").Key("LogPath").MustString("/data/log.txt")
-	DropTable = file.Section("site").Key("DropTable").MustBool(false)
+// setGlobalVariables 设置全局变量以保持向后兼容
+func setGlobalVariables(config *Config) {
+	// 站点配置
+	if config.Site.Port != 0 {
+		Port = strconv.Itoa(config.Site.Port)
+	} else {
+		Port = "12123" // 默认值
+	}
+	AppKey = config.Site.AppKey
+	DatabasePath = config.Site.DatabasePath
+	IPDataPath = config.Site.IPDataPath
+	LogFilePath = config.Site.LogPath
+	DropTable = config.Site.DropTable
+	AllowedOrigins = config.Site.AllowedOrigins
+
+	// 管理员配置
+	AdminUsername = config.Admin.Username
+	AdminPassword = config.Admin.Password
+	AdminEmail = config.Admin.Email
 }
 
-func LoadAdminConfig(file *ini.File) {
-	AdminUsername = file.Section("admin").Key("Username").MustString("admin")
-	AdminPassword = file.Section("admin").Key("Password").MustString("123456")
-	AdminEmail = file.Section("admin").Key("Email").MustString("example@admin.com")
+// GetSiteConfig 获取站点配置
+func GetSiteConfig() *SiteConfig {
+	if GlobalConfig != nil {
+		return &GlobalConfig.Site
+	}
+	return nil
+}
+
+// GetAdminConfig 获取管理员配置
+func GetAdminConfig() *AdminConfig {
+	if GlobalConfig != nil {
+		return &GlobalConfig.Admin
+	}
+	return nil
+}
+
+// GetAllowedOrigins 获取允许的域名列表
+func GetAllowedOrigins() []string {
+	if GlobalConfig != nil {
+		return GlobalConfig.Site.AllowedOrigins
+	}
+	return []string{}
 }

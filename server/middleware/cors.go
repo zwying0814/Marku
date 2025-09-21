@@ -5,23 +5,14 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"marku-server/config"
 )
 
 // CORS中间件
 func Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// 允许的域名列表
-		allowedOrigins := []string{
-			"http://localhost:3000",
-			"http://localhost:5173",
-			"http://localhost:5500",
-			"http://127.0.0.1:3000",
-			"http://127.0.0.1:5173",
-			"http://127.0.0.1:5500",
-			"http://localhost:12123",
-			"http://127.0.0.1:12123",
-			"file://", // 允许本地文件访问
-		}
+		// 从配置文件中获取允许的域名列表
+		allowedOrigins := config.GetAllowedOrigins()
 
 		origin := c.Request.Header.Get("Origin")
 		

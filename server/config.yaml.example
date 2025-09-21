@@ -1,0 +1,38 @@
+# Marku 服务器配置文件
+
+# 站点配置
+site:
+  # 系统运行端口
+  port: 12123
+  
+  # 系统运行密钥
+  app_key: "F\\=G*[(m_1*m_2)/(r^2)]"
+  
+  # 数据库路径
+  database_path: "./data/marku.bin"
+  
+  # IP数据库路径
+  ip_data_path: "./data/ip2region.xdb"
+  
+  # 日志文件路径
+  log_path: "./data/log.txt"
+  
+  # 每次启动是否清空数据表
+  drop_table: false
+  
+  # CORS 允许的域名列表
+  allowed_origins:
+    - "http://localhost:3000"
+    - "http://localhost:5173"
+    - "file://"
+
+# 管理员配置
+admin:
+  # 管理员账户
+  username: "admin"
+  
+  # 管理员密码
+  password: "123456"
+  
+  # 管理员邮箱
+  email: "example@admin.com"

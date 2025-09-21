@@ -9,6 +9,9 @@ import MarkuCounter, {
   defaultCounter 
 } from './count';
 
+// 导出工具类
+import { Utils } from './utils';
+
 // 导出类型定义
 export type { CountConfig, BatchAPIResponse, CounterEventDetail } from './types';
 
@@ -20,7 +23,8 @@ export const LIBRARY_NAME = 'Marku';
 export { 
   MarkuCounter,
   init, 
-  defaultCounter 
+  defaultCounter,
+  Utils
 };
 
 // 默认导出
@@ -29,5 +33,6 @@ export default {
   LIBRARY_NAME,
   MarkuCounter,
   init,
-  defaultCounter
+  defaultCounter,
+  Utils
 };

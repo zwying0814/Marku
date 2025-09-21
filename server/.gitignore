@@ -11,5 +11,8 @@
 *.exe
 
 data/*.db
+data/*.bin
+data/*.txt
 tmp
 config.ini
+config.yaml
