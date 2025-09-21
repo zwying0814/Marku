@@ -39,7 +39,7 @@ jobs:
         mkdir -p dist/windows
         mkdir -p dist/windows/data
         cp server/marku-server-${{ github.event.inputs.version }}-windows-amd64.exe dist/windows/
-        cp server/config.ini.example dist/windows/
+        cp server/config.yaml.example dist/windows/
         cd dist/windows
         zip -r ../../marku-server-${{ github.event.inputs.version }}-windows-amd64.zip .
         
@@ -48,7 +48,7 @@ jobs:
         mkdir -p dist/linux
         mkdir -p dist/linux/data
         cp server/marku-server-${{ github.event.inputs.version }}-linux-amd64 dist/linux/
-        cp server/config.ini.example dist/linux/
+        cp server/config.yaml.example dist/linux/
         cd dist/linux
         tar -czf ../../marku-server-${{ github.event.inputs.version }}-linux-amd64.tar.gz .
         
@@ -72,7 +72,7 @@ jobs:
           
           每个压缩包都包含：
           - 可执行文件（marku-server，静态编译，无系统依赖）
-          - 配置文件（config.ini）
+          - 配置文件（config.yaml）
           - 数据目录（data/）
           
           ## 兼容性说明
