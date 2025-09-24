@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "serve": "cd packages/server && go run main.go"
+    "serve": "cd packages/server && go run main.go",
+    "publish:marku": "node scripts/publish-marku.js"
   },
   "keywords": [],
   "author": "",

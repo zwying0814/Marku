@@ -10,15 +10,14 @@ const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 // 基础配置
 const baseConfig = {
   input: 'src/index.ts',
-  external: [
-    // 将 peerDependencies 和 dependencies 标记为外部依赖
-    ...Object.keys(pkg.peerDependencies || {}),
-    ...Object.keys(pkg.dependencies || {})
-  ],
+  // 移除外部依赖，将所有依赖打包进 UMD 文件
+  external: [],
   plugins: [
     resolve({
       browser: true,
-      preferBuiltins: false
+      preferBuiltins: false,
+      // 解析所有依赖到 bundle 中
+      exportConditions: ['browser']
     }),
     commonjs(),
     typescript({
@@ -30,47 +29,46 @@ const baseConfig = {
   ]
 };
 
-// 开发环境配置
-const devConfig = {
+// UMD 开发版本配置
+const umdDevConfig = {
   ...baseConfig,
   output: {
-    file: pkg.browser,
+    file: 'dist/index.umd.js',
     format: 'umd',
     name: 'Marku',
     sourcemap: true,
-    globals: {
-      // 如果有外部依赖，在这里定义全局变量名
-    }
+    // 浏览器全局变量名
+    globals: {}
   }
 };
 
-// 生产环境配置
-const prodConfig = {
+// UMD 压缩版本配置
+const umdProdConfig = {
   ...baseConfig,
   plugins: [
     ...baseConfig.plugins,
     terser({
       compress: {
         drop_console: true,
-        drop_debugger: true
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.warn']
       },
       format: {
         comments: false
+      },
+      mangle: {
+        reserved: ['Marku']
       }
     })
   ],
   output: {
-    file: pkg.browser.replace('.js', '.min.js'),
+    file: 'dist/index.umd.min.js',
     format: 'umd',
     name: 'Marku',
     sourcemap: true,
-    globals: {
-      // 如果有外部依赖，在这里定义全局变量名
-    }
+    globals: {}
   }
 };
 
-// 根据环境变量决定使用哪个配置
-export default process.env.NODE_ENV === 'production' 
-  ? [devConfig, prodConfig] 
-  : devConfig;
+// 始终生成两个版本：开发版和压缩版
+export default [umdDevConfig, umdProdConfig];

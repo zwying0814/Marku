@@ -184,6 +184,47 @@ export default class MarkuCounter {
         return await FetchUtils.submitCountersBatch(counters);
     }
 
+    /**
+     * 重载计数器
+     * 清理当前状态并重新初始化所有组件，适用于 pjax 等页面动态加载场景
+     */
+    public reload(): void {
+        if (!this.initialized) {
+            console.log('Marku Counter: Not initialized yet, skipping reload');
+            return;
+        }
+
+        console.log('Marku Counter: Reloading...');
+
+        // 清理已处理的元素状态
+        this.clearElementStates();
+
+        // 重新加载计数器和处理设置计数器
+        this.loadCounters();
+        this.processSetCounters();
+
+        console.log('Marku Counter: Reload completed');
+    }
+
+    /**
+     * 清理页面中所有已处理元素的状态
+     * 移除 marku-submitted、marku-processing、marku-submit-error 等状态类
+     */
+    private clearElementStates(): void {
+        // 清理 get-count 元素状态
+        const getCountElements = FindUtils.findCounterElements();
+        Array.from(getCountElements).forEach(element => {
+            element.classList.remove('marku-loaded', 'marku-loading', 'marku-error');
+        });
+
+        // 清理 set-count 元素状态
+        const setCountElements = FindUtils.findSetCounterElements();
+        Array.from(setCountElements).forEach(element => {
+            element.classList.remove('marku-submitted', 'marku-processing', 'marku-submit-error');
+        });
+
+        console.log('Marku Counter: Element states cleared');
+    }
 
 }
 
@@ -192,3 +233,6 @@ export const defaultCounter = new MarkuCounter();
 
 // 便捷函数
 export const init = (siteIdOrOptions: string | ConfigOptions, apiBaseUrl?: string, includeQuery: boolean = true) => defaultCounter.init(siteIdOrOptions, apiBaseUrl, includeQuery);
+
+// 重载函数
+export const reload = () => defaultCounter.reload();

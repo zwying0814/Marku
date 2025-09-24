@@ -6,7 +6,8 @@
 // 导出主要功能
 import MarkuCounter, { 
   init, 
-  defaultCounter 
+  defaultCounter,
+  reload
 } from './count';
 
 // 导出工具类
@@ -24,6 +25,7 @@ export {
   MarkuCounter,
   init, 
   defaultCounter,
+  reload,
   Utils
 };
 
@@ -34,5 +36,6 @@ export default {
   MarkuCounter,
   init,
   defaultCounter,
+  reload,
   Utils
 };
