@@ -1,5 +1,4 @@
 import { BatchAPIResponse, BatchSetCounterRequest, BatchSetCounterResponse } from './types';
-import { Utils } from './utils';
 import { defaultConfig } from './config';
 
 /**
@@ -35,7 +34,6 @@ export class FetchUtils {
 
             const requestBody = {
                 siteId: config.siteId,
-                url: Utils.getCurrentPageUrl(config.includeQuery),
                 keys: keys
             };
 
@@ -120,7 +118,6 @@ export class FetchUtils {
 
             const requestBody: BatchSetCounterRequest = {
                 siteId: config.siteId,
-                url: Utils.getCurrentPageUrl(config.includeQuery),
                 counters: counters
             };
 

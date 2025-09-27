@@ -9,9 +9,7 @@ export class Config {
         // 站点id，从后端获取
         siteId: '',
         // 后端接口地址
-        apiBaseUrl: '',
-        // 查询、提交是否包含url query参数
-        includeQuery: true
+        apiBaseUrl: ''
     };
 
     /**
@@ -28,15 +26,13 @@ export class Config {
      * 初始化配置
      * @param siteIdOrOptions - 站点ID或配置选项对象
      * @param apiBaseUrl - API基础URL（当第一个参数为字符串时使用）
-     * @param includeQuery - 是否包含查询参数（当第一个参数为字符串时使用）
      */
-    public init(siteIdOrOptions: string | ConfigOptions, apiBaseUrl?: string, includeQuery: boolean = true): void {
+    public init(siteIdOrOptions: string | ConfigOptions, apiBaseUrl?: string): void {
         if (typeof siteIdOrOptions === 'string') {
             // 传统方式：直接传入参数
             this.config = {
                 siteId: siteIdOrOptions,
-                apiBaseUrl: apiBaseUrl || '',
-                includeQuery: includeQuery
+                apiBaseUrl: apiBaseUrl || ''
             };
         } else {
             // 新方式：传入配置对象
@@ -66,13 +62,6 @@ export class Config {
     }
 
     /**
-     * 是否包含查询参数
-     */
-    public getIncludeQuery(): boolean {
-        return this.config.includeQuery;
-    }
-
-    /**
      * 验证配置是否有效
      */
     public validate(): { valid: boolean; errors: string[] } {
@@ -97,9 +86,9 @@ export class Config {
 export const defaultConfig = Config.getInstance();
 
 // 导出便捷函数
-export const initConfig = (siteIdOrOptions?: string | ConfigOptions, apiBaseUrl?: string, includeQuery?: boolean) => {
+export const initConfig = (siteIdOrOptions?: string | ConfigOptions, apiBaseUrl?: string) => {
     if (typeof siteIdOrOptions === 'string') {
-        return defaultConfig.init(siteIdOrOptions, apiBaseUrl, includeQuery);
+        return defaultConfig.init(siteIdOrOptions, apiBaseUrl);
     } else {
         return defaultConfig.init(siteIdOrOptions || {});
     }

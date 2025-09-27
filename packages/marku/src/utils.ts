@@ -1,17 +1,4 @@
 export class Utils {
-    /**
-     * 获取当前页面URL（不包含域名）
-     * @returns 页面路径
-     */
-    public static getCurrentPageUrl(includeQuery:boolean): string {
-        if (typeof window === 'undefined') {
-            return '/';
-        }
-        
-        return includeQuery 
-            ? window.location.pathname + window.location.search
-            : window.location.pathname;
-    }
 
     /**
      * 解析元素的marku-inc属性，获取自增量

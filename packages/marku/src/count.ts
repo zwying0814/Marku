@@ -11,16 +11,15 @@ export default class MarkuCounter {
      * 初始化计数器
      * @param siteIdOrOptions - 站点ID或配置选项对象
      * @param apiBaseUrl - API基础URL（当第一个参数为字符串时使用）
-     * @param includeQuery - 是否包含查询参数（当第一个参数为字符串时使用）
      */
-    public init(siteIdOrOptions: string | ConfigOptions, apiBaseUrl?: string, includeQuery: boolean = true): void {
+    public init(siteIdOrOptions: string | ConfigOptions, apiBaseUrl?: string): void {
         if (this.initialized) {
             console.log('Marku Counter: Already initialized');
             return;
         }
         this.initialized = true;
 
-        defaultConfig.init(siteIdOrOptions, apiBaseUrl, includeQuery);
+        defaultConfig.init(siteIdOrOptions, apiBaseUrl);
 
         this.loadCounters();
         this.processSetCounters();
@@ -232,7 +231,7 @@ export default class MarkuCounter {
 export const defaultCounter = new MarkuCounter();
 
 // 便捷函数
-export const init = (siteIdOrOptions: string | ConfigOptions, apiBaseUrl?: string, includeQuery: boolean = true) => defaultCounter.init(siteIdOrOptions, apiBaseUrl, includeQuery);
+export const init = (siteIdOrOptions: string | ConfigOptions, apiBaseUrl?: string) => defaultCounter.init(siteIdOrOptions, apiBaseUrl);
 
 // 重载函数
 export const reload = () => defaultCounter.reload();

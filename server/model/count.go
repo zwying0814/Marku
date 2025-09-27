@@ -11,16 +11,15 @@ import (
 type Count struct {
 	ID     uint   `gorm:"primaryKey" json:"id"`
 	SiteID string `gorm:"not null;index:idx_counter,unique" json:"site_id"`
-	URL    string `gorm:"not null;index:idx_counter,unique" json:"url"`
 	Key    string `gorm:"not null;index:idx_counter,unique" json:"key"`
 	Num    int64  `gorm:"default:0" json:"num"`
 	types.BaseModel
 }
 
-// BatchGetCountersByKeys 批量根据siteid、url、keys查询计数器
-func BatchGetCountersByKeys(siteID, url string, keys []string) (map[string]*Count, error) {
+// BatchGetCountersByKeys 批量根据siteid、keys查询计数器
+func BatchGetCountersByKeys(siteID string, keys []string) (map[string]*Count, error) {
 	var counters []Count
-	err := DB.Where("site_id = ? AND url = ? AND key IN ?", siteID, url, keys).Find(&counters).Error
+	err := DB.Where("site_id = ? AND key IN ?", siteID, keys).Find(&counters).Error
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +35,6 @@ func BatchGetCountersByKeys(siteID, url string, keys []string) (map[string]*Coun
 		if _, exists := result[key]; !exists {
 			result[key] = &Count{
 				SiteID: siteID,
-				URL:    url,
 				Key:    key,
 				Num:    0,
 			}
@@ -47,7 +45,7 @@ func BatchGetCountersByKeys(siteID, url string, keys []string) (map[string]*Coun
 }
 
 // BatchIncrementCountersByKeys 批量增加计数器数值
-func BatchIncrementCountersByKeys(siteID, url string, counters []struct {
+func BatchIncrementCountersByKeys(siteID string, counters []struct {	
 	Key       string `json:"key"`
 	Increment int64  `json:"increment"`
 }) (map[string]*Count, error) {
@@ -65,13 +63,12 @@ func BatchIncrementCountersByKeys(siteID, url string, counters []struct {
 		var counter Count
 
 		// 查找现有记录
-		err := tx.Where("site_id = ? AND url = ? AND key = ?", siteID, url, item.Key).First(&counter).Error
+		err := tx.Where("site_id = ? AND key = ?", siteID, item.Key).First(&counter).Error
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				// 记录不存在，创建新记录
 				counter = Count{
 					SiteID: siteID,
-					URL:    url,
 					Key:    item.Key,
 					Num:    item.Increment,
 				}

@@ -1,6 +1,6 @@
 {
   "name": "marku",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A lightweight and flexible counter library for web applications, browser-ready UMD package",
   "main": "dist/index.umd.js",
   "browser": "dist/index.umd.js",
@@ -25,7 +25,10 @@
     "clean": "rimraf dist",
     "type-check": "tsc --noEmit",
     "prepublishOnly": "npm run clean && npm run build",
-    "test": "npx http-server -p 5500"
+    "test": "npx http-server -p 5500",
+    "npm:version:patch": "npm version patch",
+    "npm:version:minor": "npm version minor",
+    "npm:version:major": "npm version major"
   },
   "keywords": [
     "counter",

@@ -11,7 +11,6 @@ import (
 // BatchIncrementCounterRequest 批量增加计数器请求结构
 type BatchIncrementCounterRequest struct {
 	SiteID   string `json:"siteid" binding:"required"`
-	URL      string `json:"url" binding:"required"`
 	Counters []struct {
 		Key       string `json:"key"`
 		Increment int64  `json:"increment"`
@@ -26,7 +25,7 @@ func BatchIncrementCounters(c *gin.Context) {
 		return
 	}
 
-	counters, err := model.BatchIncrementCountersByKeys(req.SiteID, req.URL, req.Counters)
+	counters, err := model.BatchIncrementCountersByKeys(req.SiteID, req.Counters)
 	if err != nil {
 		utils.SendError(c, http.StatusInternalServerError, "Failed to increment counters: "+err.Error())
 		return
