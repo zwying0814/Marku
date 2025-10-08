@@ -11,7 +11,7 @@ import (
 // BatchGetCounterRequest 批量查询计数器请求结构
 type BatchGetCounterRequest struct {
 	SiteID string   `json:"siteid" binding:"required"`
-	Keys   []string `json:"keys" binding:"required"`
+	Marks   []string `json:"marks" binding:"required"`
 }
 // BatchGetCounters 批量查询计数器
 func BatchGetCounters(c *gin.Context) {
@@ -21,7 +21,7 @@ func BatchGetCounters(c *gin.Context) {
 		return
 	}
 
-	counters, err := model.BatchGetCountersByKeys(req.SiteID, req.Keys)
+	counters, err := model.BatchGetCountersByMarks(req.SiteID, req.Marks)
 	if err != nil {
 		utils.SendError(c, http.StatusInternalServerError, "Failed to query counters: "+err.Error())
 		return
@@ -31,8 +31,8 @@ func BatchGetCounters(c *gin.Context) {
 	var counterArray []map[string]interface{}
 	for _, counter := range counters {
 		counterArray = append(counterArray, map[string]interface{}{
-			"key": counter.Key,
-			"num": counter.Num,
+			"mark": counter.Mark,
+			"num":  counter.Num,
 		})
 	}
 	utils.SendResponse(c, http.StatusOK, "Success", counterArray)

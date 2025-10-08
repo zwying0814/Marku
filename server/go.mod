@@ -8,7 +8,13 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/glebarez/sqlite v1.11.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
-	gorm.io/gorm v1.25.7
+	gorm.io/gorm v1.30.0
+)
+
+require (
+	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/go-sql-driver/mysql v1.8.1 // indirect
+	gorm.io/driver/mysql v1.6.0 // indirect
 )
 
 require (
@@ -41,7 +47,7 @@ require (
 	golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b // indirect
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
-	golang.org/x/text v0.9.0 // indirect
+	golang.org/x/text v0.20.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/libc v1.66.3 // indirect

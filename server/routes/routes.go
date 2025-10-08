@@ -4,6 +4,7 @@ import (
 	"log"
 	"marku-server/config"
 	"marku-server/handle/app"
+	"marku-server/handle/comment"
 	"marku-server/handle/count"
 	"marku-server/middleware"
 
@@ -25,6 +26,9 @@ func InitRouter() {
 		public.POST("/count/batch", count.BatchGetCounters)
 		// 计数器批量增量
 		public.POST("/increment/batch", count.BatchIncrementCounters)
+		
+		// 评论提交
+		public.POST("/comment/submit", comment.SubmitComment)
 	}
 
 	_ = r.Run(":" + config.Port)

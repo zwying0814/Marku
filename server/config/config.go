@@ -10,19 +10,41 @@ import (
 
 // Config 主配置结构体
 type Config struct {
-	Site  SiteConfig  `yaml:"site"`
-	Admin AdminConfig `yaml:"admin"`
+	Site     SiteConfig     `yaml:"site"`
+	Admin    AdminConfig    `yaml:"admin"`
+	Database DatabaseConfig `yaml:"database"`
 }
 
 // SiteConfig 站点配置结构体
 type SiteConfig struct {
 	Port           int      `yaml:"port"`
 	AppKey         string   `yaml:"app_key"`
-	DatabasePath   string   `yaml:"database_path"`
 	IPDataPath     string   `yaml:"ip_data_path"`
 	LogPath        string   `yaml:"log_path"`
 	DropTable      bool     `yaml:"drop_table"`
 	AllowedOrigins []string `yaml:"allowed_origins"`
+}
+
+// DatabaseConfig 数据库配置结构体
+type DatabaseConfig struct {
+	Type     string      `yaml:"type"`     // 数据库类型: "sqlite" 或 "mysql"
+	SQLite   SQLiteConfig `yaml:"sqlite"`   // SQLite 配置
+	MySQL    MySQLConfig  `yaml:"mysql"`    // MySQL 配置
+}
+
+// SQLiteConfig SQLite 数据库配置
+type SQLiteConfig struct {
+	Path string `yaml:"path"` // 数据库文件路径
+}
+
+// MySQLConfig MySQL 数据库配置
+type MySQLConfig struct {
+	Host     string `yaml:"host"`     // 主机地址
+	Port     int    `yaml:"port"`     // 端口号
+	Username string `yaml:"username"` // 用户名
+	Password string `yaml:"password"` // 密码
+	Database string `yaml:"database"` // 数据库名
+	Charset  string `yaml:"charset"`  // 字符集
 }
 
 // AdminConfig 管理员配置结构体
@@ -36,7 +58,7 @@ type AdminConfig struct {
 var (
 	AppKey         string
 	IPDataPath     string
-	DatabasePath   string
+	DatabasePath   string // 保持向后兼容，用于 SQLite
 	Port           string
 	LogFilePath    string
 	DropTable      bool
@@ -80,11 +102,18 @@ func setGlobalVariables(config *Config) {
 		Port = "12123" // 默认值
 	}
 	AppKey = config.Site.AppKey
-	DatabasePath = config.Site.DatabasePath
 	IPDataPath = config.Site.IPDataPath
 	LogFilePath = config.Site.LogPath
 	DropTable = config.Site.DropTable
 	AllowedOrigins = config.Site.AllowedOrigins
+
+	// 数据库配置 (保持向后兼容)
+	if config.Database.Type == "sqlite" || config.Database.Type == "" {
+		DatabasePath = config.Database.SQLite.Path
+		if DatabasePath == "" {
+			DatabasePath = "./data/marku.bin" // 默认 SQLite 路径
+		}
+	}
 
 	// 管理员配置
 	AdminUsername = config.Admin.Username
@@ -114,4 +143,36 @@ func GetAllowedOrigins() []string {
 		return GlobalConfig.Site.AllowedOrigins
 	}
 	return []string{}
+}
+
+// GetDatabaseConfig 获取数据库配置
+func GetDatabaseConfig() *DatabaseConfig {
+	if GlobalConfig != nil {
+		return &GlobalConfig.Database
+	}
+	return nil
+}
+
+// GetDatabaseType 获取数据库类型
+func GetDatabaseType() string {
+	if GlobalConfig != nil && GlobalConfig.Database.Type != "" {
+		return GlobalConfig.Database.Type
+	}
+	return "sqlite" // 默认使用 SQLite
+}
+
+// GetMySQLConfig 获取 MySQL 配置
+func GetMySQLConfig() *MySQLConfig {
+	if GlobalConfig != nil {
+		return &GlobalConfig.Database.MySQL
+	}
+	return nil
+}
+
+// GetSQLiteConfig 获取 SQLite 配置
+func GetSQLiteConfig() *SQLiteConfig {
+	if GlobalConfig != nil {
+		return &GlobalConfig.Database.SQLite
+	}
+	return nil
 }

@@ -1,0 +1,73 @@
+{
+  "name": "marku",
+  "version": "2.0.0",
+  "description": "A lightweight JavaScript library for website analytics, including page view counters and comment systems",
+  "keywords": [
+    "analytics",
+    "counter",
+    "comment",
+    "statistics",
+    "web",
+    "frontend",
+    "javascript",
+    "typescript"
+  ],
+  "author": "Veen Zhao <zwying0814@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/zwying0814/marku#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zwying0814/marku.git",
+    "directory": "packages/client"
+  },
+  "bugs": {
+    "url": "https://github.com/zwying0814/marku/issues"
+  },
+  "type": "module",
+  "main": "./dist/marku.umd.js",
+  "module": "./dist/marku.es.js",
+  "types": "./dist/marku.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/marku.es.js",
+      "require": "./dist/marku.umd.js",
+      "types": "./dist/marku.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run build:lib",
+    "build:lib": "vite build --mode lib && npm run build:types",
+    "build:types": "tsc --project tsconfig.build.json",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "validate": "node scripts/pre-publish.cjs",
+    "prepublishOnly": "npm run clean && npm run type-check && npm run build:lib && npm run validate",
+    "publish:npm": "npm publish --access public",
+    "publish:dry": "npm publish --dry-run"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vite": "npm:rolldown-vite@7.1.14",
+    "@types/node": "^22.0.0",
+    "rimraf": "^6.0.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "vite": "npm:rolldown-vite@7.1.14"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

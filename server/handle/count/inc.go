@@ -12,7 +12,7 @@ import (
 type BatchIncrementCounterRequest struct {
 	SiteID   string `json:"siteid" binding:"required"`
 	Counters []struct {
-		Key       string `json:"key"`
+		Mark      string `json:"mark"`
 		Increment int64  `json:"increment"`
 	} `json:"counters" binding:"required"`
 }
@@ -25,7 +25,7 @@ func BatchIncrementCounters(c *gin.Context) {
 		return
 	}
 
-	counters, err := model.BatchIncrementCountersByKeys(req.SiteID, req.Counters)
+	counters, err := model.BatchIncrementCountersByMarks(req.SiteID, req.Counters)
 	if err != nil {
 		utils.SendError(c, http.StatusInternalServerError, "Failed to increment counters: "+err.Error())
 		return
@@ -35,8 +35,8 @@ func BatchIncrementCounters(c *gin.Context) {
 	var counterArray []map[string]interface{}
 	for _, counter := range counters {
 		counterArray = append(counterArray, map[string]interface{}{
-			"key": counter.Key,
-			"num": counter.Num,
+			"mark": counter.Mark,
+			"num":  counter.Num,
 		})
 	}
 	utils.SendResponse(c, http.StatusOK, "Success", counterArray)
