@@ -1,4 +1,4 @@
-import { processCommentSubmit } from "./comment";
+import { processCommentSubmit, processCommentList } from "./comment";
 import { initConfig, type MarkuConfig } from "./config";
 import { processCounters } from "./counter";
 
@@ -61,7 +61,7 @@ class Marku {
         // 处理评论提交
         processCommentSubmit();
         // 处理评论列表
-        // processCommentList();
+        processCommentList();
     }
 
     // 检查是否已初始化

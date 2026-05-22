@@ -31,16 +31,19 @@ export interface BatchSetCounterResponse {
  * 评论数据接口
  */
 export interface CommentData {
+    id?: number;
     username: string;
     email: string;
     url?: string;
     content: string;
     mark: string;
     siteId: string;
-    parent?: string;
+    parent?: number | string;
     ip?: string;
     location?: string;
     ua?: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
 /**

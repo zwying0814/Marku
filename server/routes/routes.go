@@ -26,9 +26,11 @@ func InitRouter() {
 		public.POST("/count/batch", count.BatchGetCounters)
 		// 计数器批量增量
 		public.POST("/increment/batch", count.BatchIncrementCounters)
-		
+
 		// 评论提交
 		public.POST("/comment/submit", comment.SubmitComment)
+		// 评论列表
+		public.GET("/comment/list", comment.GetComments)
 	}
 
 	_ = r.Run(":" + config.Port)

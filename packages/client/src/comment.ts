@@ -156,7 +156,79 @@ const renderCommentList = (listElement: Element, comments: CommentData[])=>{
         return;
     }
 
-    // 2. 遍历评论数据，根据是否有parentId判断是父级评论还是子级评论
+    // 清空之前的评论内容（除了模板本身）
+    Array.from(listElement.children).forEach(child => {
+        if (child.tagName !== 'TEMPLATE') {
+            child.remove();
+        }
+    });
 
-    // 3. 渲染评论到评论列表元素中，元素包含对应的
+    if (!comments || comments.length === 0) {
+        console.log('Marku Comment: No comments to render');
+        return;
+    }
+
+    console.log(`Marku Comment: Rendering ${comments.length} comments`);
+
+    // 2. 分离父评论和子评论
+    const parentComments = comments.filter(c => !c.parent);
+    const childCommentsByParent = new Map<string | number, CommentData[]>();
+    
+    comments.forEach(c => {
+        if (c.parent) {
+            if (!childCommentsByParent.has(c.parent)) {
+                childCommentsByParent.set(c.parent, []);
+            }
+            childCommentsByParent.get(c.parent)!.push(c);
+        }
+    });
+
+    // 3. 渲染父评论和子评论
+    parentComments.forEach(parentComment => {
+        // 克隆父评论模板
+        const parentNode = parentTemplate.content.cloneNode(true) as DocumentFragment;
+        const parentElement = parentNode.firstElementChild as Element;
+        
+        // 填充父评论数据
+        fillCommentData(parentElement, parentComment);
+        
+        // 获取回复容器
+        const replyContainer = parentElement.querySelector('[marku-comment-reply-container]');
+        
+        // 渲染子评论
+        const childComments = childCommentsByParent.get(parentComment.id!) || [];
+        childComments.forEach(childComment => {
+            const childNode = childTemplate.content.cloneNode(true) as DocumentFragment;
+            const childElement = childNode.firstElementChild as Element;
+            fillCommentData(childElement, childComment);
+            if (replyContainer) {
+                replyContainer.appendChild(childElement);
+            }
+        });
+        
+        // 将父评论添加到列表中
+        listElement.appendChild(parentElement);
+    });
+}
+
+// 填充评论数据到 DOM 元素
+const fillCommentData = (element: Element, comment: CommentData) => {
+    // 用户名
+    const usernameEl = element.querySelector('[marku-comment-username]');
+    if (usernameEl) {
+        usernameEl.textContent = comment.username || '';
+    }
+
+    // 评论内容
+    const contentEl = element.querySelector('[marku-comment-content]');
+    if (contentEl) {
+        contentEl.textContent = comment.content || '';
+    }
+
+    // 时间（如果有 created_at 字段）
+    const timeEl = element.querySelector('[marku-comment-time]');
+    if (timeEl && comment.created_at) {
+        const date = new Date(comment.created_at);
+        timeEl.textContent = date.toLocaleString('zh-CN');
+    }
 }
