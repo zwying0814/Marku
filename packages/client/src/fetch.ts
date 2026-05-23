@@ -212,15 +212,15 @@ export const setCountersBatch = async (counters: Array<{ mark: string; increment
     }
 }
 
-export const submitComment = async (commentData: CommentData): Promise<boolean> => {
+export const submitComment = async (commentData: CommentData): Promise<CommentSubmitResponse | null> => {
     if (!config.apiBaseUrl) {
         console.error('Marku Comment: apiBaseUrl is required');
-        return false;
+        return null;
     }
 
     if (!config.siteId) {
         console.error('Marku Comment: siteId is required for submitComment');
-        return false;
+        return null;
     }
 
 
@@ -243,21 +243,21 @@ export const submitComment = async (commentData: CommentData): Promise<boolean> 
 
         if (!response.ok) {
             console.error('Marku Comment: HTTP error', response.status, response.statusText);
-            return false;
+            return null;
         }
 
         const result: CommentSubmitResponse = await response.json();
 
         if (result.code === 200) {
             console.log('Marku Comment: Submit success', result);
-            return true;
+            return result;
         } else {
             console.error('Marku Comment: Submit failed', result.msg);
-            return false;
+            return null;
         }
     } catch (error) {
         console.error('Marku Comment: Network error', error);
-        return false;
+        return null;
     }
 }
 

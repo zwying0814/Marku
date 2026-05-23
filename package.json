@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "serve": "cd server && air"
+    "serve": "cd server && air",
+    "client": "cd packages/client && npm run dev"
   },
   "keywords": [],
   "author": "",

@@ -1,10 +1,13 @@
 package comment
 
 import (
+	"encoding/json"
 	"fmt"
+	"marku-server/config"
 	"marku-server/model"
 	"marku-server/utils"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -17,11 +20,46 @@ type SubmitCommentRequest struct {
 	Content  string `json:"content" binding:"required"`
 	Username string `json:"username" binding:"required"`
 	Email    string `json:"email" binding:"required"`
-	Parent   string `json:"parent,omitempty"`
+	Parent   FlexibleInt `json:"parent,omitempty"`
 	URL      string `json:"url,omitempty"`
 	IP       string `json:"ip,omitempty"`
 	UA       string `json:"ua,omitempty"`
 	Location string `json:"location,omitempty"`
+}
+
+// FlexibleInt 兼容字符串和数字的整数类型
+type FlexibleInt int
+
+func (f *FlexibleInt) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" || len(data) == 0 {
+		*f = 0
+		return nil
+	}
+
+	if data[0] == '"' {
+		var value string
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		value = strings.TrimSpace(value)
+		if value == "" {
+			*f = 0
+			return nil
+		}
+		parsed, err := strconv.Atoi(value)
+		if err != nil {
+			return err
+		}
+		*f = FlexibleInt(parsed)
+		return nil
+	}
+
+	var value int
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*f = FlexibleInt(value)
+	return nil
 }
 
 // SubmitComment 提交评论
@@ -54,11 +92,12 @@ func SubmitComment(c *gin.Context) {
 
 	// 处理父评论ID
 	parentID := 0
-	if req.Parent != "" && req.Parent != "0" {
-		// 这里可以添加父评论ID的验证逻辑
-		
-		// 暂时设置为0，表示顶级评论
-		parentID = 0
+	if req.Parent != 0 {
+		parentID = int(req.Parent)
+		if parentID < 0 {
+			utils.SendError(c, http.StatusBadRequest, "父评论ID无效")
+			return
+		}
 	}
 
 	// 创建评论
@@ -71,7 +110,7 @@ func SubmitComment(c *gin.Context) {
 		IP:       &req.IP,
 		UA:       &req.UA,
 		Location: &req.Location,
-		Status:   0, // 默认待审核
+		Status:   config.GetDefaultCommentStatusValue(),
 		Featured: false,
 		Up:       0,
 		Down:     0,

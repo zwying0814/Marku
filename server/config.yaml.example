@@ -20,6 +20,11 @@ site:
     - "http://localhost:5173"
     - "file://"
 
+# 评论状态配置
+comment:
+  # 新评论默认状态，支持 pending / approved / rejected 等英文状态名
+  default_status: "pending"
+
 # 数据库配置
 database:
   # 数据库类型: "sqlite" 或 "mysql"

@@ -59,6 +59,18 @@ form > div {
   gap: 0.5rem;
 }
 
+.reply-state {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  background: rgba(100, 108, 255, 0.12);
+  border: 1px solid rgba(100, 108, 255, 0.28);
+  color: #cfd3ff;
+}
+
 label {
   font-weight: 500;
   color: #ccc;
@@ -81,6 +93,42 @@ input:focus, textarea:focus {
 textarea {
   min-height: 100px;
   resize: vertical;
+}
+
+.comment-parent,
+.comment-child {
+  padding: 0.9rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.comment-child {
+  margin-top: 0.75rem;
+  margin-left: 1.25rem;
+}
+
+.comment-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.comment-reply-button {
+  padding: 0.35rem 0.8rem;
+  font-size: 0.9rem;
+  background-color: transparent;
+  border-color: rgba(100, 108, 255, 0.5);
+  color: #646cff;
+}
+
+.comment-reply-button:hover {
+  background-color: rgba(100, 108, 255, 0.12);
+}
+
+[marku-comment-reply-container] {
+  margin-top: 0.75rem;
 }
 
 /* 按钮样式 */

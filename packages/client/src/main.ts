@@ -6,7 +6,7 @@ if (!app) throw new Error('未找到 #app 元素')
 
 app.innerHTML = `
   <div>
-    <h1>Marku 测试页面（精简版）</h1>
+    <h1>Marku 测试页面</h1>
 
     <section class="section">
       <h2>计数器</h2>
@@ -21,6 +21,8 @@ app.innerHTML = `
     <section class="section">
       <h2>评论提交</h2>
       <form marku-comment-form="test-article" id="comment-form">
+        <input type="hidden" marku-comment-parent value="0">
+        <div class="reply-state" marku-comment-reply-target hidden></div>
         <div>
           <label>昵称: <input type="text" marku-comment-username placeholder="昵称" required></label>
         </div>
@@ -35,6 +37,7 @@ app.innerHTML = `
         </div>
         <div>
           <button type="button" marku-comment-submit>提交评论</button>
+          <button type="button" marku-comment-reply-cancel hidden>取消回复</button>
           <button type="reset">重置</button>
         </div>
       </form>
@@ -45,15 +48,22 @@ app.innerHTML = `
       <div id="comment-list" marku-comment-list="test-article">
         <template marku-comment-template="parent">
           <div class="comment-parent">
-            <div><strong marku-comment-username></strong></div>
+            <div class="comment-head">
+              <strong marku-comment-username></strong>
+              <button type="button" class="comment-reply-button" marku-comment-reply>回复</button>
+            </div>
             <p marku-comment-content></p>
             <div marku-comment-reply-container></div>
           </div>
         </template>
         <template marku-comment-template="child">
           <div class="comment-child">
-            <div><strong marku-comment-username></strong></div>
+            <div class="comment-head">
+              <strong marku-comment-username></strong>
+              <button type="button" class="comment-reply-button" marku-comment-reply>回复</button>
+            </div>
             <p marku-comment-content></p>
+            <div marku-comment-reply-container></div>
           </div>
         </template>
       </div>

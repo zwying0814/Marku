@@ -1,6 +1,7 @@
 package comment
 
 import (
+	"marku-server/config"
 	"marku-server/model"
 	"marku-server/utils"
 	"net/http"
@@ -45,7 +46,7 @@ func GetComments(c *gin.Context) {
 	includePending := c.Query("includePending") == "1"
 	db := model.DB.Where("site_id = ? AND mark = ?", siteId, key)
 	if !includePending {
-		db = db.Where("status = ?", 1) // 默认仅返回已通过的评论
+		db = db.Where("status = ?", config.GetApprovedCommentStatusValue())
 	}
 	if err := db.Order("created_at DESC").Find(&comments).Error; err != nil {
 		utils.SendError(c, http.StatusInternalServerError, "查询评论失败: "+err.Error())

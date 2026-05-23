@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -12,6 +13,7 @@ import (
 type Config struct {
 	Site     SiteConfig     `yaml:"site"`
 	Admin    AdminConfig    `yaml:"admin"`
+	Comment  CommentConfig  `yaml:"comment"`
 	Database DatabaseConfig `yaml:"database"`
 }
 
@@ -54,6 +56,11 @@ type AdminConfig struct {
 	Email    string `yaml:"email"`
 }
 
+// CommentConfig 评论状态配置结构体
+type CommentConfig struct {
+	DefaultStatus string `yaml:"default_status"`
+}
+
 // 全局配置变量 (保持向后兼容)
 var (
 	AppKey         string
@@ -66,6 +73,7 @@ var (
 	AdminUsername  string
 	AdminPassword  string
 	AdminEmail     string
+	CommentDefaultStatus string
 )
 
 // 全局配置实例
@@ -119,6 +127,12 @@ func setGlobalVariables(config *Config) {
 	AdminUsername = config.Admin.Username
 	AdminPassword = config.Admin.Password
 	AdminEmail = config.Admin.Email
+
+	// 评论状态配置
+	CommentDefaultStatus = normalizeCommentStatus(config.Comment.DefaultStatus)
+	if CommentDefaultStatus == "" {
+		CommentDefaultStatus = "pending"
+	}
 }
 
 // GetSiteConfig 获取站点配置
@@ -175,4 +189,35 @@ func GetSQLiteConfig() *SQLiteConfig {
 		return &GlobalConfig.Database.SQLite
 	}
 	return nil
+}
+
+// GetCommentStatusValue 获取评论状态对应的数字值
+func GetCommentStatusValue(status string) int {
+	status = normalizeCommentStatus(status)
+	if status == "" {
+		status = "pending"
+	}
+
+	switch status {
+	case "approved":
+		return 1
+	case "rejected":
+		return -1
+	default:
+		return 0
+	}
+}
+
+// GetDefaultCommentStatusValue 获取默认评论状态对应的数字值
+func GetDefaultCommentStatusValue() int {
+	return GetCommentStatusValue(CommentDefaultStatus)
+}
+
+// GetApprovedCommentStatusValue 获取已通过评论状态对应的数字值
+func GetApprovedCommentStatusValue() int {
+	return GetCommentStatusValue("approved")
+}
+
+func normalizeCommentStatus(status string) string {
+	return strings.ToLower(strings.TrimSpace(status))
 }
