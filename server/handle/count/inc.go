@@ -10,7 +10,7 @@ import (
 
 // BatchIncrementCounterRequest 批量增加计数器请求结构
 type BatchIncrementCounterRequest struct {
-	SiteID   string `json:"siteid" binding:"required"`
+	SiteID   string `json:"siteId" binding:"required"`
 	Counters []struct {
 		Mark      string `json:"mark"`
 		Increment int64  `json:"increment"`

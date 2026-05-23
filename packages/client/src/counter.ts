@@ -62,8 +62,9 @@ export const processSetCounter = async () => {
         return;
     }
     console.log(`Marku Counter: Found ${counterElements.length} counter elements`);
-    // 收集所有计数器数据
-    const counters: Array<{ mark: string; increment: number }> = [];
+
+    // 页面初始化时先执行一次自增提交，恢复刷新自增效果
+    const initialCounters: Array<{ mark: string; increment: number }> = [];
     counterElements.forEach(element => {
         const mark = element.getAttribute('marku-set-count');
         if (!mark) {
@@ -71,23 +72,50 @@ export const processSetCounter = async () => {
             return;
         }
 
-        // 解析自增量
-        const increment = parseIncrement(element);
-        counters.push({ mark, increment });
-
-        // 设置处理状态
-        element.classList.add('marku-processing');
+        initialCounters.push({
+            mark,
+            increment: parseIncrement(element),
+        });
     });
-    // 批量提交到后端
-    const success = await setCountersBatch(counters);
-    // 更新元素状态
+
+    if (initialCounters.length > 0) {
+        const success = await setCountersBatch(initialCounters);
+        counterElements.forEach(element => {
+            if (success) {
+                element.classList.add('marku-submitted');
+            } else {
+                element.classList.add('marku-submit-error');
+            }
+        });
+    }
+
+    // 绑定每个按钮的点击行为
     counterElements.forEach(element => {
-        element.classList.remove('marku-processing');
-        if (success) {
-            element.classList.add('marku-submitted');
-        } else {
-            element.classList.add('marku-submit-error');
+        const mark = element.getAttribute('marku-set-count');
+        if (!mark) {
+            console.warn('Marku Counter: Element has empty marku-set-count attribute', element);
+            return;
         }
+
+        if (element.getAttribute('data-marku-counter-bound') === '1') {
+            return;
+        }
+
+        element.setAttribute('data-marku-counter-bound', '1');
+        element.addEventListener('click', async () => {
+            const increment = parseIncrement(element);
+            element.classList.add('marku-processing');
+
+            const success = await setCountersBatch([{ mark, increment }]);
+
+            element.classList.remove('marku-processing');
+            if (success) {
+                element.classList.add('marku-submitted');
+                await processGetCounter();
+            } else {
+                element.classList.add('marku-submit-error');
+            }
+        });
     });
 
     console.log('Marku Counter: All set-counters processed');
