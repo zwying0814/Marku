@@ -18,8 +18,9 @@ type SubmitCommentRequest struct {
 	SiteID   string `json:"siteId" binding:"required"`
 	Mark     string `json:"mark" binding:"required"`
 	Content  string `json:"content" binding:"required"`
-	Username string `json:"username" binding:"required"`
-	Email    string `json:"email" binding:"required"`
+	Username string `json:"username,omitempty"`
+	Email    string `json:"email,omitempty"`
+	Token    string `json:"token,omitempty"`
 	Parent   FlexibleInt `json:"parent,omitempty"`
 	URL      string `json:"url,omitempty"`
 	IP       string `json:"ip,omitempty"`
@@ -76,18 +77,43 @@ func SubmitComment(c *gin.Context) {
 		return
 	}
 
-	// 创建游客用户
-	user, err := model.CreateGuestUser(
-		req.Username,
-		req.Email,
-		req.URL,
-		req.IP,
-		req.UA,
-		req.Location,
-	)
-	if err != nil {
-		utils.SendError(c, http.StatusInternalServerError, "创建用户失败: "+err.Error())
-		return
+	var user *model.User
+	authToken := strings.TrimSpace(req.Token)
+	if authToken == "" {
+		authToken = utils.ExtractBearerToken(c.GetHeader("Authorization"))
+	}
+
+	if authToken != "" {
+		userID, err := utils.ParseAuthToken(authToken)
+		if err != nil {
+			utils.SendError(c, http.StatusUnauthorized, "登录状态无效: "+err.Error())
+			return
+		}
+		user, err = model.GetUserByID(userID)
+		if err != nil {
+			utils.SendError(c, http.StatusUnauthorized, "登录状态无效: "+err.Error())
+			return
+		}
+	} else {
+		if config.IsCommentLoginRequired() {
+			utils.SendError(c, http.StatusUnauthorized, "当前评论功能需要登录后使用")
+			return
+		}
+
+		// 创建游客用户
+		var err error
+		user, err = model.CreateGuestUser(
+			req.Username,
+			req.Email,
+			req.URL,
+			req.IP,
+			req.UA,
+			req.Location,
+		)
+		if err != nil {
+			utils.SendError(c, http.StatusInternalServerError, "创建用户失败: "+err.Error())
+			return
+		}
 	}
 
 	// 处理父评论ID

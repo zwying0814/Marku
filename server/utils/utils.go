@@ -15,3 +15,8 @@ func SetPasswordEncrypt(password string) (encodedPassword string, err error) {
 	encode := string(encrypted)
 	return encode, nil
 }
+
+// CheckPasswordEncrypt 校验已加密密码是否与明文密码一致
+func CheckPasswordEncrypt(encodedPassword, password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(encodedPassword), []byte(password))
+}

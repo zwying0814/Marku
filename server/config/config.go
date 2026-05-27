@@ -14,6 +14,7 @@ type Config struct {
 	Site     SiteConfig     `yaml:"site"`
 	Admin    AdminConfig    `yaml:"admin"`
 	Comment  CommentConfig  `yaml:"comment"`
+	SMTP     SMTPConfig     `yaml:"smtp"`
 	Database DatabaseConfig `yaml:"database"`
 }
 
@@ -59,6 +60,20 @@ type AdminConfig struct {
 // CommentConfig 评论状态配置结构体
 type CommentConfig struct {
 	DefaultStatus string `yaml:"default_status"`
+	RequireLogin  bool   `yaml:"require_login"`
+}
+
+// SMTPConfig 邮件服务器配置结构体
+type SMTPConfig struct {
+	Enabled    bool   `yaml:"enabled"`
+	Host       string `yaml:"host"`
+	Port       int    `yaml:"port"`
+	Username   string `yaml:"username"`
+	Password   string `yaml:"password"`
+	From       string `yaml:"from"`
+	SenderName string `yaml:"sender_name"`
+	Security   string `yaml:"security"`
+	SkipVerify  bool  `yaml:"skip_verify"`
 }
 
 // 全局配置变量 (保持向后兼容)
@@ -74,6 +89,7 @@ var (
 	AdminPassword  string
 	AdminEmail     string
 	CommentDefaultStatus string
+	CommentRequireLogin  bool
 )
 
 // 全局配置实例
@@ -133,6 +149,7 @@ func setGlobalVariables(config *Config) {
 	if CommentDefaultStatus == "" {
 		CommentDefaultStatus = "pending"
 	}
+	CommentRequireLogin = config.Comment.RequireLogin
 }
 
 // GetSiteConfig 获取站点配置
@@ -208,9 +225,22 @@ func GetCommentStatusValue(status string) int {
 	}
 }
 
+// GetSMTPConfig 获取 SMTP 配置
+func GetSMTPConfig() *SMTPConfig {
+	if GlobalConfig != nil {
+		return &GlobalConfig.SMTP
+	}
+	return nil
+}
+
 // GetDefaultCommentStatusValue 获取默认评论状态对应的数字值
 func GetDefaultCommentStatusValue() int {
 	return GetCommentStatusValue(CommentDefaultStatus)
+}
+
+// IsCommentLoginRequired 返回评论是否需要登录
+func IsCommentLoginRequired() bool {
+	return CommentRequireLogin
 }
 
 // GetApprovedCommentStatusValue 获取已通过评论状态对应的数字值

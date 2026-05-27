@@ -39,14 +39,14 @@ func InitDatabase() {
 
 	if config.DropTable {
 		//清空表
-		err = DB.Migrator().DropTable(&User{}, &Count{}, &Comment{})
+		err = DB.Migrator().DropTable(&User{}, &Count{}, &Comment{}, &EmailVerificationCode{})
 		if err != nil {
 			log.Fatalln("清空表失败！")
 		}
 	}
 
 	// 自动迁移数据库
-	err = DB.AutoMigrate(&User{}, &Count{}, &Comment{})
+	err = DB.AutoMigrate(&User{}, &Count{}, &Comment{}, &EmailVerificationCode{})
 	if err != nil {
 		log.Fatalln("数据库迁移失败！")
 	}

@@ -1,8 +1,9 @@
 package types
 
 const (
+	RoleGuest = 1
+	RoleUser  = 2
 	RoleAdmin = 9
-	RoleUser  = 1
 )
 
 const (

@@ -25,6 +25,30 @@ comment:
   # 新评论默认状态，支持 pending / approved / rejected 等英文状态名
   default_status: "pending"
 
+  # 评论是否需要登录后才能提交
+  require_login: false
+
+# SMTP 配置
+smtp:
+  # 是否启用邮件发送
+  enabled: false
+  # SMTP 服务器地址
+  host: "smtp.example.com"
+  # SMTP 端口
+  port: 587
+  # SMTP 用户名
+  username: "user@example.com"
+  # SMTP 密码
+  password: "password"
+  # 发件人地址
+  from: "Marku <user@example.com>"
+  # 发件人显示名
+  sender_name: "Marku"
+  # 安全模式: plain / starttls / ssl
+  security: "starttls"
+  # 是否跳过证书校验
+  skip_verify: false
+
 # 数据库配置
 database:
   # 数据库类型: "sqlite" 或 "mysql"
