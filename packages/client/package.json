@@ -1,6 +1,6 @@
 {
   "name": "marku",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A lightweight JavaScript library for website analytics, including page view counters and comment systems",
   "keywords": [
     "analytics",
@@ -53,6 +53,7 @@
     "validate": "node scripts/pre-publish.cjs",
     "prepublishOnly": "npm run clean && npm run type-check && npm run build:lib && npm run validate",
     "publish:npm": "npm publish --access public",
+    "publish:official": "npm publish --access public --registry=https://registry.npmjs.org/",
     "publish:dry": "npm publish --dry-run"
   },
   "devDependencies": {
