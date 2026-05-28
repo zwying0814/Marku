@@ -21,25 +21,64 @@ app.innerHTML = `
     <section class="section">
       <h2>评论提交</h2>
       <form marku-comment-form="test-article" id="comment-form">
-        <input type="hidden" marku-comment-parent value="0">
-        <div class="reply-state" marku-comment-reply-target hidden></div>
-        <div>
-          <label>昵称: <input type="text" marku-comment-username placeholder="昵称" required></label>
-        </div>
-        <div>
-          <label>邮箱: <input type="email" marku-comment-email placeholder="邮箱" required></label>
-        </div>
-        <div>
-          <label>网址: <input type="url" marku-comment-url placeholder="网址(可选)"></label>
-        </div>
-        <div>
-          <label>评论: <textarea marku-comment-content placeholder="请输入评论" required></textarea></label>
-        </div>
-        <div>
-          <button type="button" marku-comment-submit>提交评论</button>
-          <button type="button" marku-comment-reply-cancel hidden>取消回复</button>
-          <button type="reset">重置</button>
-        </div>
+        <input type="hidden" marku-comment-parent value="0" />
+                <div
+                    className="mb-3 hidden rounded-xl bg-accent/20 px-3 py-2 text-xs text-muted-foreground"
+                    marku-comment-reply-target
+                ></div>
+                <div className="min-w-0">
+                    <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        <input
+                            type="text"
+                            marku-comment-username
+                            placeholder="昵称"
+                            required
+                            className="h-10 rounded-xl bg-card/90 px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground/70"
+                        />
+                        <input
+                            type="email"
+                            marku-comment-email
+                            placeholder="邮箱"
+                            required
+                            className="h-10 rounded-xl bg-card/90 px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground/70"
+                        />
+                        <input
+                            type="url"
+                            marku-comment-url
+                            placeholder="网址 (可选)"
+                            className="h-10 rounded-xl bg-card/90 px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground/70 sm:col-span-2"
+                        />
+                    </div>
+                    <textarea
+                        rows={4}
+                        marku-comment-content
+                        placeholder="写下你的想法..."
+                        required
+                        className="min-h-28 w-full resize-none rounded-2xl bg-card/90 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70"
+                    ></textarea>
+                    <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="text-xs leading-5 text-muted-foreground">
+                            支持 Markdown、@ 回复和表情。
+                        </p>
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                marku-comment-reply-cancel
+                                hidden
+                                className="inline-flex items-center justify-center rounded-full bg-muted px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                            >
+                                取消回复
+                            </button>
+                            <button
+                                type="button"
+                                marku-comment-submit
+                                className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90"
+                            >
+                                发送评论
+                            </button>
+                        </div>
+                    </div>
+                </div>
       </form>
     </section>
 

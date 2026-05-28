@@ -49,6 +49,8 @@ class Marku {
         
         // 重新处理计数器
         this.processCounters();
+        // 同时刷新评论区域与评论列表
+        this.processComment();
     }
 
     // 私有方法：处理计数器
