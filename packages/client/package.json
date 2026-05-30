@@ -1,6 +1,6 @@
 {
   "name": "marku",
-  "version": "2.0.1",
+  "version": "2.1.1",
   "description": "A lightweight JavaScript library for website analytics, including page view counters and comment systems",
   "keywords": [
     "analytics",

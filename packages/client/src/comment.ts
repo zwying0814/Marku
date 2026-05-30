@@ -13,6 +13,8 @@ const COMMENT_REPLY_EVENT = 'marku:comment-reply-target';
 const COMMENT_REFRESH_EVENT = 'marku:comment-success';
 
 const formAnchorMap = new WeakMap<Element, Comment>();
+const commentFormRegistry = new Map<string, Set<HTMLFormElement>>();
+let commentReplyBridgeBound = false;
 type CommentListState = {
     key: string;
     page: number;
@@ -335,6 +337,35 @@ const setReplyTarget = (form: Element, target: ReplyTarget | null) => {
     }
 };
 
+const ensureCommentReplyBridge = () => {
+    if (commentReplyBridgeBound) {
+        return;
+    }
+
+    commentReplyBridgeBound = true;
+    document.addEventListener(COMMENT_REPLY_EVENT, ((event: Event) => {
+        const customEvent = event as CustomEvent<ReplyTarget & { key: string }>;
+        const key = customEvent.detail?.key;
+        if (!key) {
+            return;
+        }
+
+        const forms = commentFormRegistry.get(key);
+        if (!forms || forms.size === 0) {
+            return;
+        }
+
+        Array.from(forms).forEach(form => {
+            if (!form.isConnected) {
+                forms.delete(form);
+                return;
+            }
+
+            setReplyTarget(form, customEvent.detail);
+        });
+    }) as EventListener);
+};
+
 
 export const processCommentSubmit = async () => {
     // 查找页面全部表单元素
@@ -360,20 +391,18 @@ export const processCommentSubmit = async () => {
         keyElementMap.get(key)!.push(element);
     });
     // 遍历每个表单元素
+    ensureCommentReplyBridge();
     commentForms.forEach(form => {
         const formKey = getCommentKey(form);
         const { parentInput, replyCancelButton } = getFormReplyState(form);
         ensureFormAnchor(form);
 
-        setReplyTarget(form, null);
+        if (!commentFormRegistry.has(formKey)) {
+            commentFormRegistry.set(formKey, new Set());
+        }
+        commentFormRegistry.get(formKey)!.add(form as HTMLFormElement);
 
-        document.addEventListener(COMMENT_REPLY_EVENT, ((event: Event) => {
-            const customEvent = event as CustomEvent<ReplyTarget & { key: string }>;
-            if (!customEvent.detail || customEvent.detail.key !== formKey) {
-                return;
-            }
-            setReplyTarget(form, customEvent.detail);
-        }) as EventListener);
+        setReplyTarget(form, null);
 
         if (replyCancelButton) {
             replyCancelButton.addEventListener('click', () => {
