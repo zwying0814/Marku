@@ -84,26 +84,60 @@ app.innerHTML = `
 
     <section class="section">
       <h2>评论列表</h2>
-      <div id="comment-list" marku-comment-list="test-article">
+      <div class="comment-panel" marku-comment-list="test-article" marku-comment-page="1" marku-comment-page-size="5">
+        <div class="comment-summary">
+          <p>评论总数：<strong marku-comment-total>加载中...</strong></p>
+          <p>当前页：<strong marku-comment-page>1</strong> / <strong marku-comment-page-count>1</strong></p>
+        </div>
+
+        <div class="comment-list" marku-comment-body></div>
+        <p class="comment-empty" marku-comment-empty hidden>当前页没有评论</p>
+
+        <div class="comment-pagination">
+          <button type="button" marku-comment-prev>上一页</button>
+          <button type="button" marku-comment-next>下一页</button>
+        </div>
+
         <template marku-comment-template="parent">
-          <div class="comment-parent">
-            <div class="comment-head">
-              <strong marku-comment-username></strong>
-              <button type="button" class="comment-reply-button" marku-comment-reply>回复</button>
+          <article class="comment-card">
+            <div class="comment-card-head">
+              <div class="comment-avatar" marku-comment-avatar>
+                <img class="comment-avatar-image" marku-comment-avatar-image hidden />
+                <span class="comment-avatar-fallback" marku-comment-avatar-fallback></span>
+              </div>
+              <div class="comment-meta">
+                <strong class="comment-name" marku-comment-username></strong>
+                <div class="comment-submeta">
+                  <span marku-comment-time></span>
+                  <span marku-comment-email></span>
+                </div>
+              </div>
             </div>
-            <p marku-comment-content></p>
+            <p class="comment-content" marku-comment-content></p>
+            <button class="comment-reply-button" type="button" marku-comment-reply>回复</button>
             <div marku-comment-reply-container></div>
-          </div>
+          </article>
         </template>
+
         <template marku-comment-template="child">
-          <div class="comment-child">
-            <div class="comment-head">
-              <strong marku-comment-username></strong>
-              <button type="button" class="comment-reply-button" marku-comment-reply>回复</button>
+          <article class="comment-card comment-card-child">
+            <div class="comment-card-head">
+              <div class="comment-avatar" marku-comment-avatar>
+                <img class="comment-avatar-image" marku-comment-avatar-image hidden />
+                <span class="comment-avatar-fallback" marku-comment-avatar-fallback></span>
+              </div>
+              <div class="comment-meta">
+                <strong class="comment-name" marku-comment-username></strong>
+                <div class="comment-submeta">
+                  <span marku-comment-time></span>
+                  <span marku-comment-email></span>
+                </div>
+              </div>
             </div>
-            <p marku-comment-content></p>
+            <p class="comment-content" marku-comment-content></p>
+            <button class="comment-reply-button" type="button" marku-comment-reply>回复</button>
             <div marku-comment-reply-container></div>
-          </div>
+          </article>
         </template>
       </div>
     </section>
@@ -115,27 +149,11 @@ app.innerHTML = `
   </div>
 `
 
-function logEvent(level: 'info' | 'success' | 'error', message: string, payload?: any) {
-  const el = document.getElementById('event-log')!
-  const time = new Date().toLocaleTimeString()
-  const text = `${time} [${level.toUpperCase()}] ${message}${payload ? ' ' + JSON.stringify(payload) : ''}\n`
-  el.innerText += text
-}
-
 const marku = new Marku({
   siteId: 'test-site',
   apiBaseUrl: 'http://localhost:12123'
 })
 
 marku.init()
-logEvent('info', 'Marku 初始化完成', { initialized: marku.isInitialized && marku.isInitialized() })
-
-document.addEventListener('marku:comment-success', (e: any) => {
-  logEvent('success', '评论提交成功', e.detail)
-})
-
-document.addEventListener('marku:comment-error', (e: any) => {
-  logEvent('error', '评论提交失败', e.detail)
-})
 
 console.log('Marku 初始化完成:', marku.isInitialized && marku.isInitialized())

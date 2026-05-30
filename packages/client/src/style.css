@@ -46,6 +46,117 @@ h2 {
   background-color: rgba(255, 255, 255, 0.05);
 }
 
+.comment-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  background: rgba(100, 108, 255, 0.08);
+  border: 1px solid rgba(100, 108, 255, 0.16);
+}
+
+.comment-summary p {
+  margin: 0;
+}
+
+.comment-list,
+#comment-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.comment-card {
+  padding: 1rem 1rem 0.9rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.comment-card-child {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.comment-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 0.8rem;
+}
+
+.comment-avatar {
+  flex: 0 0 auto;
+  width: 2.5rem;
+  height: 2.5rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #646cff, #8b5cf6);
+  box-shadow: 0 8px 24px rgba(100, 108, 255, 0.2);
+}
+
+.comment-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.comment-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+}
+
+.comment-meta {
+  min-width: 0;
+}
+
+.comment-name {
+  display: block;
+  font-size: 1rem;
+}
+
+.comment-submeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  margin-top: 0.2rem;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.comment-content {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.comment-children {
+  margin-top: 0.85rem;
+  padding-left: 1rem;
+  border-left: 2px solid rgba(100, 108, 255, 0.22);
+}
+
+.comment-empty {
+  margin: 0;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+  color: #888;
+}
+
+.comment-pagination {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
 /* 表单样式 */
 form {
   display: flex;
@@ -210,5 +321,25 @@ span[marku-get-count] {
     background-color: #f9f9f9;
     border-color: #ddd;
     color: #213547;
+  }
+
+  .comment-summary {
+    background: rgba(100, 108, 255, 0.06);
+    border-color: rgba(100, 108, 255, 0.14);
+  }
+
+  .comment-card,
+  .comment-card-child {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: #e5e7eb;
+  }
+
+  .comment-submeta,
+  .comment-empty {
+    color: #64748b;
+  }
+
+  .comment-children {
+    border-left-color: rgba(100, 108, 255, 0.18);
   }
 }

@@ -35,6 +35,7 @@ export interface CommentData {
     username: string;
     email: string;
     url?: string;
+    avatar?: string;
     content: string;
     mark: string;
     siteId: string;
@@ -44,6 +45,13 @@ export interface CommentData {
     ua?: string;
     created_at?: string;
     updated_at?: string;
+    user?: {
+        id: number;
+        username: string;
+        email?: string;
+        url?: string;
+        avatar?: string;
+    };
 }
 
 /**
@@ -62,9 +70,42 @@ export interface CommentSubmitResponse {
  */
 export interface CommentListResponse {
     code: number;
-    msg: string;
+    msg?: string;
+    message?: string;
     data?: CommentData[];
+    total?: number;
+    page?: number;
+    pageSize?: number;
+    pageCount?: number;
 }
+
+type CommentListPayload = {
+    data?: CommentData[];
+    total?: number;
+    page?: number;
+    pageSize?: number;
+    pageCount?: number;
+};
+
+const normalizeCommentListResponse = (result: Record<string, unknown>): CommentListResponse => {
+    const payload = (result.data && typeof result.data === 'object' ? result.data : null) as CommentListPayload | null;
+    const responseData = Array.isArray(result.data)
+        ? result.data as CommentData[]
+        : Array.isArray(payload?.data)
+            ? payload?.data
+            : [];
+
+    return {
+        code: typeof result.code === 'number' ? result.code : 500,
+        msg: typeof result.msg === 'string' ? result.msg : (typeof result.message === 'string' ? result.message : ''),
+        message: typeof result.message === 'string' ? result.message : (typeof result.msg === 'string' ? result.msg : ''),
+        data: responseData,
+        total: typeof result.total === 'number' ? result.total : payload?.total,
+        page: typeof result.page === 'number' ? result.page : payload?.page,
+        pageSize: typeof result.pageSize === 'number' ? result.pageSize : payload?.pageSize,
+        pageCount: typeof result.pageCount === 'number' ? result.pageCount : payload?.pageCount,
+    };
+};
 
 
 
@@ -261,7 +302,7 @@ export const submitComment = async (commentData: CommentData): Promise<CommentSu
     }
 }
 
-export const fetchComments = async (key: string): Promise<CommentListResponse> => {
+export const fetchComments = async (key: string, page = 1, pageSize = 10): Promise<CommentListResponse> => {
     if (!config.apiBaseUrl) {
         console.error('Marku Comment: apiBaseUrl is required');
         return {
@@ -284,6 +325,8 @@ export const fetchComments = async (key: string): Promise<CommentListResponse> =
         const url = new URL('/api/comment/list', config.apiBaseUrl);
         url.searchParams.append('siteId', config.siteId);
         url.searchParams.append('key', key);
+        url.searchParams.append('page', String(page));
+        url.searchParams.append('pageSize', String(pageSize));
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -304,16 +347,16 @@ export const fetchComments = async (key: string): Promise<CommentListResponse> =
             };
         }
 
-        const result: CommentListResponse = await response.json();
+        const result = normalizeCommentListResponse(await response.json());
 
         if (result.code === 200) {
             console.log('Marku Comment: Fetch success', result);
             return result;
         } else {
-            console.error('Marku Comment: Fetch failed', result.msg);
+            console.error('Marku Comment: Fetch failed', result.msg || result.message);
             return {
                 code: result.code,
-                msg: result.msg,
+                msg: result.msg || result.message || 'Fetch failed',
                 data: []
             };
         }

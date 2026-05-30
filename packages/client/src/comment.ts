@@ -10,8 +10,31 @@ type ReplyTarget = {
 };
 
 const COMMENT_REPLY_EVENT = 'marku:comment-reply-target';
+const COMMENT_REFRESH_EVENT = 'marku:comment-success';
 
 const formAnchorMap = new WeakMap<Element, Comment>();
+type CommentListState = {
+    key: string;
+    page: number;
+    pageSize: number;
+    total: number;
+    pageCount: number;
+    listElement: Element;
+    bodyElement: HTMLElement;
+    parentTemplate: HTMLTemplateElement;
+    childTemplate: HTMLTemplateElement;
+    totalElement: HTMLElement | null;
+    pageElement: HTMLElement | null;
+    pageCountElement: HTMLElement | null;
+    prevButton: HTMLButtonElement | null;
+    nextButton: HTMLButtonElement | null;
+    emptyElement: HTMLElement | null;
+    loading: boolean;
+};
+
+const commentListStateMap = new WeakMap<Element, CommentListState>();
+const commentListRegistry = new Map<string, Set<CommentListState>>();
+let commentListRefreshBridgeBound = false;
 
 const getCommentKey = (element: Element | null) => element?.getAttribute('marku-comment-form') || element?.getAttribute('marku-comment-list') || '';
 
@@ -36,9 +59,185 @@ const moveFormToReplyContainer = (form: Element, replyContainer: HTMLElement) =>
     form.classList.add('marku-comment-reply-form');
 };
 
-const getListElementByKey = (key: string) => {
-    const escapedKey = key.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-    return document.querySelector(`[marku-comment-list="${escapedKey}"]`) as Element | null;
+const parsePositiveInt = (value: string, fallback: number) => {
+    const parsed = Number.parseInt(value, 10);
+    if (Number.isNaN(parsed) || parsed <= 0) {
+        return fallback;
+    }
+    return parsed;
+};
+
+const getCommentListBody = (listElement: Element) => {
+    return (listElement.querySelector('[marku-comment-body]') as HTMLElement | null) || (listElement as HTMLElement);
+};
+
+const getCommentListTemplates = (listElement: Element) => {
+    const parentTemplate = listElement.querySelector('template[marku-comment-template="parent"]') as HTMLTemplateElement | null;
+    const childTemplate = listElement.querySelector('template[marku-comment-template="child"]') as HTMLTemplateElement | null;
+
+    if (!parentTemplate || !childTemplate) {
+        return null;
+    }
+
+    return { parentTemplate, childTemplate };
+};
+
+const getCommentListState = (listElement: Element) => {
+    const existingState = commentListStateMap.get(listElement);
+    if (existingState) {
+        return existingState;
+    }
+
+    const templates = getCommentListTemplates(listElement);
+    if (!templates) {
+        return null;
+    }
+
+    const state: CommentListState = {
+        key: getCommentKey(listElement),
+        page: parsePositiveInt(listElement.getAttribute('marku-comment-page') || '', 1),
+        pageSize: Math.min(parsePositiveInt(listElement.getAttribute('marku-comment-page-size') || '', 10), 100),
+        total: 0,
+        pageCount: 1,
+        listElement,
+        bodyElement: getCommentListBody(listElement),
+        parentTemplate: templates.parentTemplate,
+        childTemplate: templates.childTemplate,
+        totalElement: listElement.querySelector('[marku-comment-total]') as HTMLElement | null,
+        pageElement: listElement.querySelector('[marku-comment-page]') as HTMLElement | null,
+        pageCountElement: listElement.querySelector('[marku-comment-page-count]') as HTMLElement | null,
+        prevButton: listElement.querySelector('[marku-comment-prev]') as HTMLButtonElement | null,
+        nextButton: listElement.querySelector('[marku-comment-next]') as HTMLButtonElement | null,
+        emptyElement: listElement.querySelector('[marku-comment-empty]') as HTMLElement | null,
+        loading: false,
+    };
+
+    commentListStateMap.set(listElement, state);
+    if (!commentListRegistry.has(state.key)) {
+        commentListRegistry.set(state.key, new Set());
+    }
+    commentListRegistry.get(state.key)!.add(state);
+
+    return state;
+};
+
+const ensureCommentListRefreshBridge = () => {
+    if (commentListRefreshBridgeBound) {
+        return;
+    }
+
+    commentListRefreshBridgeBound = true;
+    document.addEventListener(COMMENT_REFRESH_EVENT, ((event: Event) => {
+        const customEvent = event as CustomEvent<{ mark?: string }>;
+        const key = customEvent.detail?.mark;
+        if (!key) {
+            return;
+        }
+
+        const states = commentListRegistry.get(key);
+        if (!states) {
+            return;
+        }
+
+        states.forEach(state => {
+            void loadCommentListPage(state, state.page);
+        });
+    }) as EventListener);
+};
+
+const updateCommentListSummary = (state: CommentListState) => {
+    if (state.totalElement) {
+        state.totalElement.textContent = String(state.total);
+    }
+    if (state.pageElement) {
+        state.pageElement.textContent = String(state.page);
+    }
+    if (state.pageCountElement) {
+        state.pageCountElement.textContent = String(state.pageCount || 1);
+    }
+    if (state.prevButton) {
+        state.prevButton.disabled = state.page <= 1 || state.loading;
+    }
+    if (state.nextButton) {
+        state.nextButton.disabled = state.page >= state.pageCount || state.loading;
+    }
+};
+
+const clearCommentListBody = (state: CommentListState) => {
+    Array.from(state.bodyElement.children).forEach(child => {
+        if (child.tagName !== 'TEMPLATE') {
+            child.remove();
+        }
+    });
+};
+
+const renderCommentListIntoState = (state: CommentListState, comments: CommentData[]) => {
+    clearCommentListBody(state);
+
+    if (!comments || comments.length === 0) {
+        if (state.emptyElement) {
+            state.emptyElement.hidden = false;
+        } else {
+            const emptyNode = document.createElement('p');
+            emptyNode.className = 'comment-empty';
+            emptyNode.textContent = '当前页没有评论';
+            state.bodyElement.appendChild(emptyNode);
+        }
+        return;
+    }
+
+    if (state.emptyElement) {
+        state.emptyElement.hidden = true;
+    }
+
+    const parentComments = comments.filter(comment => !comment.parent || Number(comment.parent) === 0);
+    const childCommentsByParent = new Map<string | number, CommentData[]>();
+
+    comments.forEach(comment => {
+        if (comment.parent && Number(comment.parent) !== 0) {
+            if (!childCommentsByParent.has(comment.parent)) {
+                childCommentsByParent.set(comment.parent, []);
+            }
+            childCommentsByParent.get(comment.parent)!.push(comment);
+        }
+    });
+
+    const listKey = state.key;
+    parentComments.forEach(parentComment => {
+        renderCommentNode(state.bodyElement, state.parentTemplate, state.childTemplate, parentComment, childCommentsByParent, listKey);
+    });
+};
+
+const loadCommentListPage = async (state: CommentListState, page = state.page) => {
+    if (state.loading) {
+        return;
+    }
+
+    state.loading = true;
+    updateCommentListSummary(state);
+
+    const result = await fetchComments(state.key, page, state.pageSize);
+    if (result.code !== 200) {
+        clearCommentListBody(state);
+        const errorNode = document.createElement('p');
+        errorNode.className = 'comment-empty';
+        errorNode.textContent = `加载评论失败：${result.msg || '未知错误'}`;
+        state.bodyElement.appendChild(errorNode);
+        state.total = 0;
+        state.page = 1;
+        state.pageCount = 1;
+        state.loading = false;
+        updateCommentListSummary(state);
+        return;
+    }
+
+    state.page = result.page || page;
+    state.pageSize = result.pageSize || state.pageSize;
+    state.total = result.total || 0;
+    state.pageCount = result.pageCount || 1;
+    renderCommentListIntoState(state, result.data || []);
+    state.loading = false;
+    updateCommentListSummary(state);
 };
 
 const createCommentElement = (
@@ -88,54 +287,6 @@ const createCommentElement = (
     }
 
     return commentElement;
-};
-
-const renderSubmittedComment = (
-    form: Element,
-    commentData: CommentData,
-    commentId: number,
-) => {
-    const listKey = getCommentKey(form);
-    const listElement = getListElementByKey(listKey);
-    if (!listElement) {
-        return;
-    }
-
-    const parentTemplate = listElement.querySelector('template[marku-comment-template="parent"]') as HTMLTemplateElement | null;
-    const childTemplate = listElement.querySelector('template[marku-comment-template="child"]') as HTMLTemplateElement | null;
-    if (!parentTemplate || !childTemplate) {
-        return;
-    }
-
-    const submittedComment: CommentData = {
-        ...commentData,
-        id: commentId,
-        created_at: new Date().toISOString(),
-    };
-
-    const parentInput = form.querySelector('[marku-comment-parent]') as HTMLInputElement | null;
-    const isReply = Boolean(parentInput && Number(parentInput.value || 0) > 0);
-    const commentElement = createCommentElement(
-        parentTemplate,
-        childTemplate,
-        submittedComment,
-        listKey,
-        new Map(),
-        isReply,
-    );
-
-    if (isReply && form.parentElement?.hasAttribute('marku-comment-reply-container')) {
-        const replyContainer = form.parentElement as HTMLElement;
-        replyContainer.insertBefore(commentElement, form);
-        return;
-    }
-
-    const firstRenderedChild = Array.from(listElement.children).find(child => child.tagName !== 'TEMPLATE');
-    if (firstRenderedChild) {
-        listElement.insertBefore(commentElement, firstRenderedChild);
-    } else {
-        listElement.appendChild(commentElement);
-    }
 };
 
 const getFormReplyState = (form: Element) => {
@@ -277,7 +428,6 @@ export const processCommentSubmit = async () => {
                 // 提交成功，设置加载状态为成功
                 submitButton.classList.remove('marku-comment-loading');
                 submitButton.classList.add('marku-comment-success');
-                renderSubmittedComment(form, commentData, Number(result.data?.id || 0));
                 // 清空内容
                 contentInput.value = '';
                 setReplyTarget(form, null);
@@ -314,87 +464,38 @@ export const processCommentList = async () => {
         return;
     }
     console.log(`Marku Comment: Found ${commentListElements.length} comment list elements`);
-    // 收集所有key和对应的元素
-    const keyElementMap = new Map<string, Element[]>();
-    const keys: string[] = [];
-    commentListElements.forEach(element => {
-        const key = element.getAttribute('marku-comment-list');
-        if (!key) {
-            console.warn('Marku Comment: Element has empty marku-comment-list attribute', element);
-            return;
-        }
-        if (!keyElementMap.has(key)) {
-            keyElementMap.set(key, []);
-            keys.push(key);
-        }
-        keyElementMap.get(key)!.push(element);
-    });
+    ensureCommentListRefreshBridge();
 
-    // 遍历每个列表元素
-    commentListElements.forEach(async listElement => {
-        const key = listElement.getAttribute('marku-comment-list');
-        if (!key) {
-            console.warn('Marku Comment: Element has empty marku-comment-list attribute', listElement);
-            return;
+    for (const listElement of commentListElements) {
+        const state = getCommentListState(listElement);
+        if (!state) {
+            console.warn('Marku Comment: Comment list is missing required templates', listElement);
+            continue;
         }
-        const commentData = await fetchComments(key);
-        if (commentData.code === 200) {
-            // 渲染评论列表
-            renderCommentList(listElement, commentData.data || []);
-        } else {
-            console.error('Marku Comment: Failed to fetch comments', commentData);
+
+        const prevButton = state.prevButton;
+        const nextButton = state.nextButton;
+
+        if (prevButton && !prevButton.dataset.markuBound) {
+            prevButton.dataset.markuBound = 'true';
+            prevButton.addEventListener('click', () => {
+                if (state.page > 1) {
+                    void loadCommentListPage(state, state.page - 1);
+                }
+            });
         }
-    });
 
-}
+        if (nextButton && !nextButton.dataset.markuBound) {
+            nextButton.dataset.markuBound = 'true';
+            nextButton.addEventListener('click', () => {
+                if (state.page < state.pageCount) {
+                    void loadCommentListPage(state, state.page + 1);
+                }
+            });
+        }
 
-
-const renderCommentList = (listElement: Element, comments: CommentData[])=>{
-    // 1. 找到页面中评论列表元素下的template模板，模板分为父级评论模板和子级评论模板
-    const parentTemplate = listElement.querySelector('template[marku-comment-template="parent"]') as HTMLTemplateElement;
-    if (!parentTemplate) {
-        console.warn('Marku Comment: No parent template element found in comment list element', listElement);
-        return;
+        void loadCommentListPage(state, state.page);
     }
-    const childTemplate = listElement.querySelector('template[marku-comment-template="child"]') as HTMLTemplateElement;
-    if (!childTemplate) {
-        console.warn('Marku Comment: No child template element found in comment list element', listElement);
-        return;
-    }
-
-    // 清空之前的评论内容（除了模板本身）
-    Array.from(listElement.children).forEach(child => {
-        if (child.tagName !== 'TEMPLATE') {
-            child.remove();
-        }
-    });
-
-    if (!comments || comments.length === 0) {
-        console.log('Marku Comment: No comments to render');
-        return;
-    }
-
-    console.log(`Marku Comment: Rendering ${comments.length} comments`);
-
-    // 2. 分离父评论和子评论
-    const parentComments = comments.filter(c => !c.parent || Number(c.parent) === 0);
-    const childCommentsByParent = new Map<string | number, CommentData[]>();
-    
-    comments.forEach(c => {
-        if (c.parent && Number(c.parent) !== 0) {
-            if (!childCommentsByParent.has(c.parent)) {
-                childCommentsByParent.set(c.parent, []);
-            }
-            childCommentsByParent.get(c.parent)!.push(c);
-        }
-    });
-
-    const listKey = getCommentKey(listElement);
-
-    // 3. 渲染父评论和子评论
-    parentComments.forEach(parentComment => {
-        renderCommentNode(listElement, parentTemplate, childTemplate, parentComment, childCommentsByParent, listKey);
-    });
 }
 
 const renderCommentNode = (
@@ -421,10 +522,47 @@ const fillCommentData = (element: Element, comment: CommentData) => {
         element.setAttribute('data-marku-comment-username', comment.username);
     }
 
+    const avatarSrc = (comment.avatar || comment.user?.avatar || '').trim();
+    const displayName = (comment.username || '匿名用户').trim();
+    const avatarFallback = displayName.charAt(0).toUpperCase() || 'U';
+    const avatarImageEl = element.querySelector('[marku-comment-avatar-image]') as HTMLImageElement | null;
+    const avatarFallbackEl = element.querySelector('[marku-comment-avatar-fallback]') as HTMLElement | null;
+    if (avatarImageEl || avatarFallbackEl) {
+        if (avatarSrc) {
+            if (avatarImageEl) {
+                avatarImageEl.src = avatarSrc;
+                avatarImageEl.hidden = false;
+            }
+            if (avatarFallbackEl) {
+                avatarFallbackEl.hidden = true;
+                avatarFallbackEl.textContent = avatarFallback;
+            }
+        } else {
+            if (avatarImageEl) {
+                avatarImageEl.removeAttribute('src');
+                avatarImageEl.hidden = true;
+            }
+            if (avatarFallbackEl) {
+                avatarFallbackEl.hidden = false;
+                avatarFallbackEl.textContent = avatarFallback;
+            }
+        }
+    }
+
     // 用户名
     const usernameEl = element.querySelector('[marku-comment-username]');
     if (usernameEl) {
         usernameEl.textContent = comment.username || '';
+    }
+
+    const emailEl = element.querySelector('[marku-comment-email]');
+    if (emailEl) {
+        emailEl.textContent = comment.user?.email || comment.email || '';
+    }
+
+    const urlEl = element.querySelector('[marku-comment-url]');
+    if (urlEl) {
+        urlEl.textContent = comment.user?.url || comment.url || '';
     }
 
     // 评论内容

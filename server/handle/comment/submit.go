@@ -20,6 +20,7 @@ type SubmitCommentRequest struct {
 	Content  string `json:"content" binding:"required"`
 	Username string `json:"username,omitempty"`
 	Email    string `json:"email,omitempty"`
+	Avatar   string `json:"avatar,omitempty"`
 	Token    string `json:"token,omitempty"`
 	Parent   FlexibleInt `json:"parent,omitempty"`
 	URL      string `json:"url,omitempty"`
@@ -99,21 +100,47 @@ func SubmitComment(c *gin.Context) {
 			utils.SendError(c, http.StatusUnauthorized, "当前评论功能需要登录后使用")
 			return
 		}
+	}
 
-		// 创建游客用户
-		var err error
-		user, err = model.CreateGuestUser(
-			req.Username,
-			req.Email,
-			req.URL,
-			req.IP,
-			req.UA,
-			req.Location,
-		)
-		if err != nil {
-			utils.SendError(c, http.StatusInternalServerError, "创建用户失败: "+err.Error())
+	authorUsername := strings.TrimSpace(req.Username)
+	authorEmail := strings.TrimSpace(req.Email)
+	authorURL := strings.TrimSpace(req.URL)
+	authorAvatar := strings.TrimSpace(req.Avatar)
+	if user != nil {
+		if authorUsername == "" {
+			authorUsername = user.Username
+		}
+		if authorEmail == "" && user.Email != nil {
+			authorEmail = strings.TrimSpace(*user.Email)
+		}
+		if authorURL == "" && user.URL != nil {
+			authorURL = strings.TrimSpace(*user.URL)
+		}
+		if authorAvatar == "" && user.Avatar != nil {
+			authorAvatar = strings.TrimSpace(*user.Avatar)
+		}
+	}
+
+	if user == nil {
+		if authorUsername == "" || authorEmail == "" {
+			utils.SendError(c, http.StatusBadRequest, "游客评论需要提供昵称和邮箱")
 			return
 		}
+	}
+
+	var emailPtr *string
+	if authorEmail != "" {
+		emailPtr = &authorEmail
+	}
+
+	var urlPtr *string
+	if authorURL != "" {
+		urlPtr = &authorURL
+	}
+
+	var avatarPtr *string
+	if authorAvatar != "" {
+		avatarPtr = &authorAvatar
 	}
 
 	// 处理父评论ID
@@ -132,7 +159,6 @@ func SubmitComment(c *gin.Context) {
 		Mark:     req.Mark,
 		Content:  req.Content,
 		Parent:   parentID,
-		UserID:   fmt.Sprintf("%d", user.ID), // 关联用户ID
 		IP:       &req.IP,
 		UA:       &req.UA,
 		Location: &req.Location,
@@ -140,6 +166,13 @@ func SubmitComment(c *gin.Context) {
 		Featured: false,
 		Up:       0,
 		Down:     0,
+		Username: authorUsername,
+		Email:    emailPtr,
+		URL:      urlPtr,
+		Avatar:   avatarPtr,
+	}
+	if user != nil {
+		comment.UserID = fmt.Sprintf("%d", user.ID)
 	}
 
 	// 保存到数据库
